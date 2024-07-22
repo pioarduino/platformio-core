@@ -186,7 +186,5 @@ class RemoteClientBase(  # pylint: disable=too-many-instance-attributes
                 "a remote machine using `pio remote agent start` command.\n"
                 "See http://docs.platformio.org/page/plus/pio-remote.html"
             )
-        else:
-            maintenance.on_platformio_exception(Exception(err.type))
         click.secho(msg, fg="red", err=True)
         self.disconnect(exit_code=1)

@@ -16,7 +16,6 @@ import os
 import signal
 import time
 
-from platformio import telemetry
 from platformio.compat import aio_get_running_loop, is_bytes
 from platformio.debug import helpers
 from platformio.debug.exception import DebugInitError
@@ -130,7 +129,6 @@ class GDBClientProcess(DebugClientProcess):
         self._handle_error(data)
         # go to init break automatically
         if self.INIT_COMPLETED_BANNER.encode() in data:
-            telemetry.log_debug_started(self.debug_config)
             self._auto_exec_continue()
 
     def console_log(self, msg):
@@ -175,7 +173,4 @@ class GDBClientProcess(DebugClientProcess):
             and b"Error in sourced" in self._errors_buffer
         ):
             return
-        telemetry.log_debug_exception(
-            DebugInitError(self._errors_buffer.decode()), self.debug_config
-        )
         self.transport.close()
