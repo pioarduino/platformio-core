@@ -25,7 +25,7 @@ from twisted.python import failure  # pylint: disable=import-error
 from twisted.spread import pb  # pylint: disable=import-error
 from zope.interface import provider  # pylint: disable=import-error
 
-from platformio import __pioremote_endpoint__, __version__, app, exception, maintenance
+from platformio import __pioremote_endpoint__, __version__, app, exception
 from platformio.remote.factory.client import RemoteClientFactory
 from platformio.remote.factory.ssl import SSLContextFactory
 
