@@ -46,10 +46,6 @@ DEFAULT_SETTINGS = {
         "description": "Enable caching for HTTP API requests",
         "value": True,
     },
-    "enable_telemetry": {
-        "description": ("Telemetry service <https://bit.ly/pio-telemetry> (Yes/No)"),
-        "value": True,
-    },
     "force_verbose": {
         "description": "Force verbose output when processing environments",
         "value": False,
@@ -69,7 +65,6 @@ SESSION_VARS = {
     "command_ctx": None,
     "caller_id": None,
     "custom_project_conf": None,
-    "pause_telemetry": False,
 }
 
 
@@ -274,8 +269,6 @@ def get_user_agent():
         data.append("IDE/%s" % os.getenv("PLATFORMIO_IDE"))
     data.append("Python/%s" % platform.python_version())
     data.append("Platform/%s" % platform.platform())
-    if not get_setting("enable_telemetry"):
-        data.append("Telemetry/0")
     return " ".join(data)
 
 
