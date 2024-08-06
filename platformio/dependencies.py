@@ -39,6 +39,7 @@ def get_pip_dependencies():
         "requests%s == 2.*" % ("[socks]" if is_proxy_set(socks=True) else ""),
         "semantic_version == 2.10.*",
         "tabulate == 0.*",
+        "intelhex",  # actual esptool.py requirement
     ]
 
     home = [
