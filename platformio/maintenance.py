@@ -165,22 +165,6 @@ def print_welcome_banner():
             click.style("https://github.com/platformio/platformio-core", fg="cyan"),
         )
     )
-    click.echo(
-        "- %s us on LinkedIn to stay up-to-date "
-        "on the latest project news > %s"
-        % (
-            click.style("follow", fg="cyan"),
-            click.style("https://www.linkedin.com/company/platformio/", fg="cyan"),
-        )
-    )
-    if not os.getenv("PLATFORMIO_IDE"):
-        click.echo(
-            "- %s PlatformIO IDE for embedded development > %s"
-            % (
-                click.style("try", fg="cyan"),
-                click.style("https://platformio.org/platformio-ide", fg="cyan"),
-            )
-        )
 
     click.echo("*" * terminal_width)
     click.echo("")
