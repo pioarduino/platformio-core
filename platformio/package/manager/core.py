@@ -32,21 +32,15 @@ def get_installed_core_packages():
     return result
 
 
-def get_core_package_dir(name, spec=None, auto_install=True):
-    if name not in get_core_dependencies():
-        raise exception.PlatformioException("Please upgrade PlatformIO Core")
+def get_core_package_dir(name, spec=None, auto_install=False):
     pm = ToolPackageManager()
-    spec = spec or PackageSpec(
-        owner="platformio", name=name, requirements=get_core_dependencies()[name]
-    )
-    pkg = pm.get_package(spec)
-    if pkg:
-        return pkg.path
-    if not auto_install:
-        return None
-    assert pm.install(spec)
-    remove_unnecessary_core_packages()
-    return pm.get_package(spec).path
+    try:
+        pkg_dir = pm.get_package(name).path
+    except:
+# pylint: disable=raise-missing-from
+        raise exception.PlatformioException("Please restart VSC/PlatformIO to fix defect install")
+# pylint: enable=raise-missing-from
+    return pkg_dir
 
 
 def update_core_packages():
