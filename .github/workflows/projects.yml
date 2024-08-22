@@ -36,7 +36,11 @@ jobs:
           repository: ${{ matrix.project.repository }}
           path: ${{ matrix.project.folder }}
 
-      - name: Compile ${{ matrix.project.repository }}
+      - name: Install Platformio with Dummy runs ${{ matrix.project.repository }}
         continue-on-error: true
-        run: pio run -d ${{ matrix.project.config_dir }} -e ${{ matrix.project.env_name }} -e ${{ matrix.project.env_name }}
+        run: |
+          pio run -d ${{ matrix.project.config_dir }} -e ${{ matrix.project.env_name }}
 
+      - name: Compile example ${{ matrix.project.repository }}
+        run: |
+          pio run -d ${{ matrix.project.config_dir }} -e ${{ matrix.project.env_name }}
