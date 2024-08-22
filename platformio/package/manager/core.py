@@ -32,9 +32,8 @@ def get_installed_core_packages():
     return result
 
 
-# pylint: disable=unused-argument
 def get_core_package_dir(name, spec=None, auto_install=False):
-# pylint: enable=unused-argument
+    # pylint: disable=unused-argument
     pm = ToolPackageManager()
     try:
         pkg_dir = pm.get_package(name).path
