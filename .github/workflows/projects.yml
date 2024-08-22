@@ -9,10 +9,10 @@ jobs:
       matrix:
         project:
           - OpenMQTTGateway:
-            repository: "1technophile/OpenMQTTGateway"
-            folder: "OpenMQTTGateway"
-            config_dir: "OpenMQTTGateway"
-            env_name: "esp32-m5atom-lite"
+            repository: "arendst/Tasmota"
+            folder: "Tasmota"
+            config_dir: "Tasmota"
+            env_name: "tasmota32"
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
@@ -22,7 +22,7 @@ jobs:
           submodules: "recursive"
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
