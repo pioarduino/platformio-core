@@ -9,10 +9,10 @@ jobs:
       matrix:
         project:
           - OpenMQTTGateway:
-            repository: "arendst/Tasmota"
-            folder: "Tasmota"
-            config_dir: "Tasmota"
-            env_name: "tasmota32"
+            repository: "Jason2866/platform-test"
+            folder: "src"
+            config_dir: "src"
+            env_name: "esp32-s3"
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
