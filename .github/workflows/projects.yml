@@ -37,5 +37,5 @@ jobs:
           path: ${{ matrix.project.folder }}
 
       - name: Compile ${{ matrix.project.repository }}
-        run: pio run -d ${{ matrix.project.config_dir }} -e ${{ matrix.project.env_name }}
+        run: pio run -d ${{ matrix.project.config_dir }} -e ${{ matrix.project.env_name }} -e ${{ matrix.project.env_name }}
 
