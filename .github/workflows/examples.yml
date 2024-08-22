@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       PIO_INSTALL_DEVPLATFORM_OWNERNAMES: "platformio"
-      PIO_INSTALL_DEVPLATFORM_NAMES: "aceinna_imu,atmelavr,atmelmegaavr,atmelsam,espressif32,espressif8266,nordicnrf52,raspberrypi,ststm32,teensy"
+      PIO_INSTALL_DEVPLATFORM_NAMES: "espressif32,espressif8266"
 
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
           submodules: "recursive"
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
