@@ -41,7 +41,7 @@ def get_core_package_dir(name, spec=None, auto_install=False):
     except:
 # pylint: disable=raise-missing-from
         raise exception.PlatformioException(
-            "Mavbe missing entry(s) in platformio.ini ?\n"
+            "Maybe missing entry(s) in platformio.ini ?\n"
             "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
             "In all cases please restart VSC/PlatformIO to try to auto fix issues."
         )
