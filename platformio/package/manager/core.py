@@ -13,11 +13,16 @@
 # limitations under the License.
 
 import os
+import tarfile
+
+from urllib import request
+from os.path import join
 
 from platformio import exception
 from platformio.dependencies import get_core_dependencies
 from platformio.package.exception import UnknownPackageError
 from platformio.package.manager.tool import ToolPackageManager
+from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
 
 
@@ -37,14 +42,31 @@ def get_core_package_dir(name, spec=None, auto_install=False):
     pm = ToolPackageManager()
     try:
         pkg_dir = pm.get_package(name).path
-    except:
+    except Exception: # pylint: disable=broad-except
+        if "tool-scons" in name:
+            base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
+            url = (
+                "https://github.com/pioarduino/scons/"
+                "releases/download/4.7.0/scons-local-4.7.0.tar.gz"
+            )
+            target_path = join(base_pack_dir, "scons-local-4.7.0.tar.gz")
+            extract_folder = join(base_pack_dir, "tool-scons")
+            with request.urlopen(request.Request(url), timeout=15.0) as response:
+                if response.status == 200:
+                    with open(target_path, "wb") as f:
+                        f.write(response.read())
+            with tarfile.open(target_path) as tar:
+                tar.extractall(extract_folder)
+            assert pm.install(name)
+            try:
+                pkg_dir = pm.get_package(name).path
+            except:
 # pylint: disable=raise-missing-from
-        raise exception.PlatformioException(
-            "Maybe missing entry(s) in platformio.ini ?\n"
-            "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
-            "In all cases please restart VSC/PlatformIO to try to auto fix issues."
-        )
-# pylint: enable=raise-missing-from
+                raise exception.PlatformioException(
+                "Maybe missing entry(s) in platformio.ini ?\n"
+                "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
+                "In all cases please restart VSC/PlatformIO to try to auto fix issues."
+                )
     return pkg_dir
 
 
