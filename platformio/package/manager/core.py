@@ -58,9 +58,22 @@ def get_core_package_dir(name, spec=None, auto_install=False):
             with tarfile.open(target_path) as tar:
                 tar.extractall(extract_folder)
             assert pm.install(name)
-            try:
-                pkg_dir = pm.get_package(name).path
-            except:
+        try:
+            pkg_dir = pm.get_package("tl-install").path
+            url = (
+                "https://github.com/pioarduino/esp_install/"
+                "releases/download/v1.7.0/esp_install-v1.7.0.zip"
+            )
+            target_path = join(base_pack_dir, "tl-install.zip")
+            extract_folder = join(base_pack_dir, "tl-install")
+            with request.urlopen(request.Request(url), timeout=15.0) as response:
+                if response.status == 200:
+                    with open(target_path, "wb") as f:
+                        f.write(response.read())
+            with tarfile.open(target_path) as tar:
+                tar.extractall(extract_folder)
+            assert pm.install("tl-install")
+        except:
 # pylint: disable=raise-missing-from
                 raise exception.PlatformioException(
                 "Maybe missing entry(s) in platformio.ini ?\n"
