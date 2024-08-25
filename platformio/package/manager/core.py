@@ -37,49 +37,52 @@ def get_installed_core_packages():
     return result
 
 
-def get_core_package_dir(name, spec=None, auto_install=False):
+def get_core_package_dir(name, spec=None, auto_install=True):
     # pylint: disable=unused-argument
     pm = ToolPackageManager()
+    base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
+
+    if name in ("tool-scons", "tool-install") and not (os.path.exists(join(base_pack_dir, "tool-scons")) and os.path.exists(join(base_pack_dir, "tool-install"))):
+        url = (
+            "https://github.com/pioarduino/scons/releases/"
+            "download/4.7.0/tool-scons.tar.gz"
+        )
+        target_path = join(base_pack_dir, "tool-scons.tar.gz")
+        extract_folder = join(base_pack_dir, "tool-scons")
+        with request.urlopen(request.Request(url), timeout=15.0) as response:
+            if response.status == 200:
+                with open(target_path, "wb") as f:
+                    f.write(response.read())
+        with tarfile.open(target_path) as tar:
+            tar.extractall(extract_folder)
+
+        url = (
+            "https://github.com/pioarduino/esp_install/releases/download/"
+            "v1.7.0/tool-install.tar.gz"
+        )
+        target_path = join(base_pack_dir, "tool-install.tar.gz")
+        extract_folder = join(base_pack_dir, "tool-install")
+        with request.urlopen(request.Request(url), timeout=15.0) as response:
+            if response.status == 200:
+                with open(target_path, "wb") as f:
+                    f.write(response.read())
+        with tarfile.open(target_path) as tar:
+            tar.extractall(extract_folder)
+
     try:
-        pkg_dir = pm.get_package(name).path
-    except Exception: # pylint: disable=broad-except
         if "tool-scons" in name:
-            base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
-            url = (
-                "https://github.com/pioarduino/scons/"
-                "releases/download/4.7.0/scons-local-4.7.0.tar.gz"
-            )
-            target_path = join(base_pack_dir, "scons-local-4.7.0.tar.gz")
-            extract_folder = join(base_pack_dir, "tool-scons")
-            with request.urlopen(request.Request(url), timeout=15.0) as response:
-                if response.status == 200:
-                    with open(target_path, "wb") as f:
-                        f.write(response.read())
-            with tarfile.open(target_path) as tar:
-                tar.extractall(extract_folder)
-            assert pm.install(name)
-        try:
-            pkg_dir = pm.get_package("tl-install").path
-            url = (
-                "https://github.com/pioarduino/esp_install/"
-                "releases/download/v1.7.0/esp_install-v1.7.0.zip"
-            )
-            target_path = join(base_pack_dir, "tl-install.zip")
-            extract_folder = join(base_pack_dir, "tl-install")
-            with request.urlopen(request.Request(url), timeout=15.0) as response:
-                if response.status == 200:
-                    with open(target_path, "wb") as f:
-                        f.write(response.read())
-            with tarfile.open(target_path) as tar:
-                tar.extractall(extract_folder)
-            assert pm.install("tl-install")
-        except:
-# pylint: disable=raise-missing-from
-                raise exception.PlatformioException(
-                "Maybe missing entry(s) in platformio.ini ?\n"
-                "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
-                "In all cases please restart VSC/PlatformIO to try to auto fix issues."
-                )
+            pkg_dir = pm.get_package("tool-scons").path
+            assert pm.install("tool-scons")
+    except Exception: # pylint: disable=broad-except
+        return
+
+    try:
+        if "tool-install" in name:
+            pkg_dir = pm.get_package("tool-install").path
+            assert pm.install("tool-install")
+    except Exception: # pylint: disable=broad-except
+        return
+
     return pkg_dir
 
 
