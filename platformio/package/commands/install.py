@@ -155,6 +155,7 @@ def _install_project_env_platform(project_env, options):
     )
     # ensure SCons is installed
     get_core_package_dir("tool-scons")
+    get_core_package_dir("tool-install")
     return not already_up_to_date
 
 
