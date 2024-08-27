@@ -48,26 +48,13 @@ def get_core_package_dir(name, spec=None, auto_install=True):
     python_exe = get_pythonexe_path()
     base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
 
-    if name in ("tool-scons", "tool-install") and not (os.path.exists(join(base_pack_dir, "tool-scons")) and os.path.exists(join(base_pack_dir, "tool-install"))):
+    if name in ("tool-scons") and not os.path.exists(join(base_pack_dir, "tool-scons")):
         url = (
             "https://github.com/pioarduino/scons/releases/"
             "download/4.7.0/tool-scons.tar.gz"
         )
         target_path = join(base_pack_dir, "tool-scons.tar.gz")
         extract_folder = join(base_pack_dir, "tool-scons")
-        with request.urlopen(request.Request(url), timeout=15.0) as response:
-            if response.status == 200:
-                with open(target_path, "wb") as f:
-                    f.write(response.read())
-        with tarfile.open(target_path) as tar:
-            tar.extractall(extract_folder)
-
-        url = (
-            "https://github.com/pioarduino/esp_install/releases/download/"
-            "v1.7.0/tool-install.tar.gz"
-        )
-        target_path = join(base_pack_dir, "tool-install.tar.gz")
-        extract_folder = join(base_pack_dir, "tool-install")
         with request.urlopen(request.Request(url), timeout=15.0) as response:
             if response.status == 200:
                 with open(target_path, "wb") as f:
@@ -82,25 +69,7 @@ def get_core_package_dir(name, spec=None, auto_install=True):
             assert pm.install("tool-scons")
     except Exception: # pylint: disable=broad-except
         print("FAIL!!! install from", name)
-        return
-
-    try:
-        if "tool-install" in name:
-            pkg_dir = pm.get_package("tool-install").path
-            print("SUCCESS!! tool install", pkg_dir)
-            assert pm.install("tool-install")
-            IDF_TOOLS = os.path.join(pkg_dir, "tools", "idf_tools.py")
-            IDF_TOOLS_FLAG = ["install"]
-            IDF_TOOLS_CMD = [python_exe, IDF_TOOLS] + IDF_TOOLS_FLAG
-            if not os.path.exists(join(IDF_TOOLS_PATH_DEFAULT, "tools")):
-                rc = subprocess.call(IDF_TOOLS_CMD)
-                if rc != 0:
-                    sys.stderr.write("Error: Couldn't execute 'idf_tools.py install' \n")
-                else:
-                    shutil.copytree(join(IDF_TOOLS_PATH_DEFAULT, "tools", "tool-packages"), join(IDF_TOOLS_PATH_DEFAULT, "tools"), symlinks=False, ignore=None, ignore_dangling_symlinks=False, dirs_exist_ok=True)
-    except Exception: # pylint: disable=broad-except
-        print("FAIL!!! install from", name)
-        return
+        return None
 
     return pkg_dir
 
