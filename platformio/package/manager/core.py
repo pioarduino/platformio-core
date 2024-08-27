@@ -69,9 +69,9 @@ def get_core_package_dir(name, spec=None, auto_install=True):
             assert pm.install("tool-scons")
     except Exception: # pylint: disable=broad-except
         print("FAIL!!! install from", name)
-        return None
+        return
 
-    return pkg_dir
+    return
 
 
 def update_core_packages():
