@@ -19,7 +19,6 @@ from platformio.compat import PY36, is_proxy_set
 
 def get_core_dependencies():
     return {
-        "tool-install",
         "tool-scons",
     }
 
