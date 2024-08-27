@@ -59,11 +59,13 @@ def get_core_package_dir(name, spec=None, auto_install=True):
     try:
         if "tool-scons" in name:
             pkg_dir = pm.get_package("tool-scons").path
-            print("SUCCESS!! tool install", pkg_dir)
             assert pm.install("tool-scons")
     except Exception: # pylint: disable=broad-except
-        print("FAIL!!! install from", name)
-
+        print(
+            "Maybe missing entry(s) in platformio.ini ?\n"
+            "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
+            "In all cases please restart VSC/PlatformIO to try to auto fix issues."
+        )
     return pkg_dir
 
 
