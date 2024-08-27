@@ -27,7 +27,6 @@ from platformio.package.exception import UnknownPackageError
 from platformio.package.manager.tool import ToolPackageManager
 from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
-from platformio.proc import get_pythonexe_path
 
 
 def get_installed_core_packages():
@@ -43,9 +42,8 @@ def get_installed_core_packages():
 
 def get_core_package_dir(name, spec=None, auto_install=True):
     # pylint: disable=unused-argument
-    IDF_TOOLS_PATH_DEFAULT = os.path.join(os.path.expanduser("~"), ".espressif")
     pm = ToolPackageManager()
-    python_exe = get_pythonexe_path()
+    pkg_dir = None
     base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
 
     if name in ("tool-scons") and not os.path.exists(join(base_pack_dir, "tool-scons")):
@@ -69,9 +67,8 @@ def get_core_package_dir(name, spec=None, auto_install=True):
             assert pm.install("tool-scons")
     except Exception: # pylint: disable=broad-except
         print("FAIL!!! install from", name)
-        return
 
-    return
+    return pkg_dir
 
 
 def update_core_packages():
