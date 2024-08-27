@@ -175,7 +175,7 @@ def test_project(
         ]
         assert pkgs_to_specs(ToolPackageManager().get_installed()) == [
             PackageSpec("framework-arduino-avr-attiny@1.3.2"),
-            PackageSpec("tool-scons@%s" % get_core_dependencies()["tool-scons"][1:]),
+            PackageSpec("tool-scons@%s" % get_core_dependencies()["tool-scons"][1:]), # pylint: disable=unsubscriptable-object
             PackageSpec("toolchain-atmelavr@1.50400.190710"),
         ]
         assert config.get("env:devkit", "lib_deps") == [
@@ -205,7 +205,7 @@ def test_project(
         ]
         assert pkgs_to_specs(ToolPackageManager().get_installed()) == [
             PackageSpec("framework-arduino-avr-attiny@1.3.2"),
-            PackageSpec("tool-scons@%s" % get_core_dependencies()["tool-scons"][1:]),
+            PackageSpec("tool-scons@%s" % get_core_dependencies()["tool-scons"][1:]), # pylint: disable=unsubscriptable-object
             PackageSpec("toolchain-atmelavr@1.70300.191015"),
             PackageSpec("toolchain-atmelavr@1.50400.190710"),
         ]
