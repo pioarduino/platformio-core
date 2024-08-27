@@ -13,15 +13,11 @@
 # limitations under the License.
 
 import os
-import subprocess
-import sys
-import shutil
 import tarfile
 
 from urllib import request
-from os.path import isfile, join
+from os.path import join
 
-from platformio import exception
 from platformio.dependencies import get_core_dependencies
 from platformio.package.exception import UnknownPackageError
 from platformio.package.manager.tool import ToolPackageManager
