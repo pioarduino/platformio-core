@@ -70,14 +70,6 @@ def get_core_package_dir(name, spec=None, auto_install=True):
 
 
 def update_core_packages():
-    pm = ToolPackageManager()
-    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
-        spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
-        try:
-            pm.update(spec, spec)
-        except UnknownPackageError:
-            pass
-    remove_unnecessary_core_packages()
     return True
 
 
