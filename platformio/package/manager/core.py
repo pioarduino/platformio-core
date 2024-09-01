@@ -19,7 +19,6 @@ from urllib import request
 from os.path import join
 
 from platformio.dependencies import get_core_dependencies
-from platformio.package.exception import UnknownPackageError
 from platformio.package.manager.tool import ToolPackageManager
 from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
@@ -70,14 +69,6 @@ def get_core_package_dir(name, spec=None, auto_install=True):
 
 
 def update_core_packages():
-    pm = ToolPackageManager()
-    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
-        spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
-        try:
-            pm.update(spec, spec)
-        except UnknownPackageError:
-            pass
-    remove_unnecessary_core_packages()
     return True
 
 
