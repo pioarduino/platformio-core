@@ -8,26 +8,11 @@ jobs:
       fail-fast: false
       matrix:
         project:
-          - marlin:
-            repository: "MarlinFirmware/Marlin"
-            folder: "Marlin"
-            config_dir: "Marlin"
-            env_name: "mega2560"
-          - smartknob:
-            repository: "scottbez1/smartknob"
-            folder: "smartknob"
-            config_dir: "smartknob"
-            env_name: "view"
-          - espurna:
-            repository: "xoseperez/espurna"
-            folder: "espurna"
-            config_dir: "espurna/code"
-            env_name: "nodemcu-lolin"
-          - OpenMQTTGateway:
-            repository: "1technophile/OpenMQTTGateway"
-            folder: "OpenMQTTGateway"
-            config_dir: "OpenMQTTGateway"
-            env_name: "esp32-m5atom-lite"
+          - PlatformTest:
+            repository: "Jason2866/platform-test"
+            folder: "src"
+            config_dir: "src"
+            env_name: "esp32-s3"
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
@@ -37,7 +22,7 @@ jobs:
           submodules: "recursive"
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -51,6 +36,6 @@ jobs:
           repository: ${{ matrix.project.repository }}
           path: ${{ matrix.project.folder }}
 
-      - name: Compile ${{ matrix.project.repository }}
-        run: pio run -d ${{ matrix.project.config_dir }} -e ${{ matrix.project.env_name }}
-
+      - name: Compile example ${{ matrix.project.repository }}
+        run: |
+          pio run -d ${{ matrix.project.config_dir }} -e ${{ matrix.project.env_name }}
