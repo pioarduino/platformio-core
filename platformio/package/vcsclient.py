@@ -190,7 +190,8 @@ class GitClient(VCSClientBase):
             if self.tag:
                 args += ["--branch", self.tag]
         args += [self.remote_url, self.src_dir]
-        assert self.run_cmd(args, cwd=os.getcwd())
+        if not is_commit:
+            assert self.run_cmd(args, cwd=os.getcwd())
         if is_commit:
             assert self.run_cmd(["init", self.src_dir], cwd=os.getcwd())
             assert self.run_cmd(["remote", "add", "origin", self.remote_url])
