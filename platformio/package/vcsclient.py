@@ -192,6 +192,9 @@ class GitClient(VCSClientBase):
         args += [self.remote_url, self.src_dir]
         assert self.run_cmd(args, cwd=os.getcwd())
         if is_commit:
+            assert self.run_cmd(["init", self.src_dir], cwd=os.getcwd())
+            assert self.run_cmd(["remote", "add", "origin", self.remote_url])
+            assert self.run_cmd(["fetch", "--depth=1", "origin", self.tag])
             assert self.run_cmd(["reset", "--hard", self.tag])
             return self.run_cmd(
                 ["submodule", "update", "--init", "--recursive", "--force"]

@@ -13,18 +13,21 @@
 # limitations under the License.
 
 import os
+import tarfile
 
-from platformio import exception
+from urllib import request
+from os.path import join
+
 from platformio.dependencies import get_core_dependencies
-from platformio.package.exception import UnknownPackageError
 from platformio.package.manager.tool import ToolPackageManager
+from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
 
 
 def get_installed_core_packages():
     result = []
     pm = ToolPackageManager()
-    for name, requirements in get_core_dependencies().items():
+    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if pkg:
@@ -33,31 +36,39 @@ def get_installed_core_packages():
 
 
 def get_core_package_dir(name, spec=None, auto_install=True):
-    if name not in get_core_dependencies():
-        raise exception.PlatformioException("Please upgrade PlatformIO Core")
+    # pylint: disable=unused-argument
     pm = ToolPackageManager()
-    spec = spec or PackageSpec(
-        owner="platformio", name=name, requirements=get_core_dependencies()[name]
-    )
-    pkg = pm.get_package(spec)
-    if pkg:
-        return pkg.path
-    if not auto_install:
-        return None
-    assert pm.install(spec)
-    remove_unnecessary_core_packages()
-    return pm.get_package(spec).path
+    pkg_dir = None
+    base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
+
+    if name in ("tool-scons") and not os.path.exists(join(base_pack_dir, "tool-scons")):
+        url = (
+            "https://github.com/pioarduino/scons/releases/"
+            "download/4.8.1/scons-local-4.8.1.tar.gz"
+        )
+        target_path = join(base_pack_dir, "tool-scons.tar.gz")
+        extract_folder = join(base_pack_dir, "tool-scons")
+        with request.urlopen(request.Request(url), timeout=15.0) as response:
+            if response.status == 200:
+                with open(target_path, "wb") as f:
+                    f.write(response.read())
+        with tarfile.open(target_path) as tar:
+            tar.extractall(extract_folder)
+
+    try:
+        if "tool-scons" in name:
+            pkg_dir = pm.get_package("tool-scons").path
+            assert pm.install("tool-scons")
+    except Exception: # pylint: disable=broad-except
+        print(
+            "Maybe missing entry(s) in platformio.ini ?\n"
+            "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
+            "In all cases please restart VSC/PlatformIO to try to auto fix issues."
+        )
+    return pkg_dir
 
 
 def update_core_packages():
-    pm = ToolPackageManager()
-    for name, requirements in get_core_dependencies().items():
-        spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
-        try:
-            pm.update(spec, spec)
-        except UnknownPackageError:
-            pass
-    remove_unnecessary_core_packages()
     return True
 
 
@@ -66,7 +77,7 @@ def remove_unnecessary_core_packages(dry_run=False):
     pm = ToolPackageManager()
     best_pkg_versions = {}
 
-    for name, requirements in get_core_dependencies().items():
+    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if not pkg:
