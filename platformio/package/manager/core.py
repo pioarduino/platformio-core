@@ -65,6 +65,31 @@ def get_core_package_dir(name, spec=None, auto_install=True):
             "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
             "In all cases please restart VSC/PlatformIO to try to auto fix issues."
         )
+
+    if name in ("contrib-piohome") and not os.path.exists(join(base_pack_dir, "contrib-piohome")):
+        url = (
+            "https://github.com/pioarduino/registry/releases/"
+            "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
+        )
+        target_path = join(base_pack_dir, "contrib-piohome.tar.gz")
+        extract_folder = join(base_pack_dir, "contrib-piohome")
+        with request.urlopen(request.Request(url), timeout=15.0) as response:
+            if response.status == 200:
+                with open(target_path, "wb") as f:
+                    f.write(response.read())
+        with tarfile.open(target_path) as tar:
+            tar.extractall(extract_folder)
+
+    try:
+        if "contrib-piohome" in name:
+            pkg_dir = pm.get_package("contrib-piohome").path
+            assert pm.install("contrib-piohome")
+    except Exception: # pylint: disable=broad-except
+        print(
+            "Maybe missing entry(s) in platformio.ini ?\n"
+            "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
+            "In all cases please restart VSC/PlatformIO to try to auto fix issues."
+        )
     return pkg_dir
 
 
