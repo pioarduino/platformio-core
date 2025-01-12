@@ -18,6 +18,7 @@ from platformio.compat import is_proxy_set
 def get_core_dependencies():
     return {
         "tool-scons",
+        "contrib-piohome",
     }
 
 
