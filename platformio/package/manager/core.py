@@ -48,6 +48,8 @@ def get_core_package_dir(name, spec=None, auto_install=True):
         )
         target_path = join(base_pack_dir, "tool-scons.tar.gz")
         extract_folder = join(base_pack_dir, "tool-scons")
+        if not os.path.exists(extract_folder):
+            os.makedirs(extract_folder)
         with request.urlopen(request.Request(url), timeout=15.0) as response:
             if response.status == 200:
                 with open(target_path, "wb") as f:
@@ -73,6 +75,8 @@ def get_core_package_dir(name, spec=None, auto_install=True):
         )
         target_path = join(base_pack_dir, "contrib-piohome.tar.gz")
         extract_folder = join(base_pack_dir, "contrib-piohome")
+        if not os.path.exists(extract_folder):
+            os.makedirs(extract_folder)
         with request.urlopen(request.Request(url), timeout=15.0) as response:
             if response.status == 200:
                 with open(target_path, "wb") as f:
