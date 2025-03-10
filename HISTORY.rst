@@ -8,6 +8,7 @@ Release Notes
 .. |UNITTESTING| replace:: `Unit Testing <https://docs.platformio.org/en/latest/advanced/unit-testing/index.html>`__
 .. |DEBUGGING| replace:: `Debugging <https://docs.platformio.org/en/latest/plus/debugging.html>`__
 .. |STATICCODEANALYSIS| replace:: `Static Code Analysis <https://docs.platformio.org/en/latest/advanced/static-code-analysis/index.html>`__
+.. |PIOHOME| replace:: `PIO Home <https://docs.platformio.org/en/latest/home/index.html>`__
 
 .. _release_notes_6:
 
@@ -20,6 +21,8 @@ test-driven methodologies, and modern toolchains for unrivaled success.
 
 6.1.18 (2025-??-??)
 ~~~~~~~~~~~~~~~~~~~
+
+* Resolved a regression issue that prevented |PIOHOME| from opening external links (`issue #5084 <https://github.com/platformio/platformio-core/issues/5084>`_)
 
 6.1.17 (2025-02-13)
 ~~~~~~~~~~~~~~~~~~~
@@ -90,7 +93,7 @@ test-driven methodologies, and modern toolchains for unrivaled success.
 ~~~~~~~~~~~~~~~~~~~
 
 * Resolved a possible issue that may cause generated projects for `PlatformIO IDE for VSCode <https://docs.platformio.org/en/latest/integration/ide/vscode.html>`__ to fail to launch a debug session because of a missing "objdump" binary when GDB is not part of the toolchain package
-* Resolved a regression issue that resulted in the malfunction of the Memory Inspection feature within `PIO Home <https://docs.platformio.org/en/latest/home/index.html>`__
+* Resolved a regression issue that resulted in the malfunction of the Memory Inspection feature within |PIOHOME|
 
 6.1.10 (2023-08-11)
 ~~~~~~~~~~~~~~~~~~~
