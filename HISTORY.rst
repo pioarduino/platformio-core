@@ -19,6 +19,9 @@ Unlock the true potential of embedded software development with
 PlatformIO's collaborative ecosystem, embracing declarative principles,
 test-driven methodologies, and modern toolchains for unrivaled success.
 
+6.1.19 (2025-??-??)
+~~~~~~~~~~~~~~~~~~~
+
 6.1.18 (2025-03-11)
 ~~~~~~~~~~~~~~~~~~~
 
