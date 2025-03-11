@@ -19,7 +19,7 @@ Unlock the true potential of embedded software development with
 PlatformIO's collaborative ecosystem, embracing declarative principles,
 test-driven methodologies, and modern toolchains for unrivaled success.
 
-6.1.18 (2025-??-??)
+6.1.18 (2025-03-11)
 ~~~~~~~~~~~~~~~~~~~
 
 * Resolved a regression issue that prevented |PIOHOME| from opening external links (`issue #5084 <https://github.com/platformio/platformio-core/issues/5084>`_)
