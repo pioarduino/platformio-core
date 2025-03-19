@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = (6, 1, "19a1")
+VERSION = (6, 1, 18)
 __version__ = ".".join([str(s) for s in VERSION])
 
 __title__ = "platformio"
@@ -40,6 +40,5 @@ __pioremote_endpoint__ = "ssl:host=remote.platformio.org:port=4413"
 
 __check_internet_hosts__ = [
     "185.199.110.153",  # Github.com
-    "88.198.170.159",  # platformio.org
     "github.com",
 ] + __registry_mirror_hosts__

@@ -19,7 +19,7 @@ from time import time
 import click
 import semantic_version
 
-from platformio import __version__, app, exception, fs, telemetry
+from platformio import __version__, app, exception, fs
 from platformio.cache import cleanup_content_cache
 from platformio.cli import PlatformioCLI
 from platformio.commands.upgrade import get_latest_version
@@ -32,7 +32,6 @@ from platformio.system.prune import calculate_unnecessary_system_data
 def on_cmd_start(ctx, caller):
     app.set_session_var("command_ctx", ctx)
     set_caller(caller)
-    telemetry.on_cmd_start(ctx)
     if PlatformioCLI.in_silence():
         return
     after_upgrade(ctx)
@@ -55,14 +54,6 @@ def on_cmd_end():
             "Please check your Internet connection.",
             fg="red",
         )
-
-
-def on_platformio_exception(exc):
-    telemetry.log_exception(exc)
-
-
-def on_platformio_exit():
-    telemetry.on_exit()
 
 
 def set_caller(caller=None):
@@ -103,7 +94,6 @@ class Upgrader:
         state_path = app.resolve_state_path("core_dir", "appstate.json")
         if not os.path.isfile(state_path):
             return True
-        app.delete_state_item("telemetry")
         created_at = app.get_state_item("created_at", None)
         if not created_at:
             state_stat = os.stat(state_path)
@@ -160,14 +150,6 @@ def after_upgrade(ctx):
             "PlatformIO has been successfully upgraded to %s!\n" % __version__,
             fg="green",
         )
-        telemetry.log_event(
-            "pio_upgrade_core",
-            {
-                "label": "%s > %s" % (last_version_str, __version__),
-                "from_version": last_version_str,
-                "to_version": __version__,
-            },
-        )
 
     return print_welcome_banner()
 
@@ -183,22 +165,6 @@ def print_welcome_banner():
             click.style("https://github.com/platformio/platformio-core", fg="cyan"),
         )
     )
-    click.echo(
-        "- %s us on LinkedIn to stay up-to-date "
-        "on the latest project news > %s"
-        % (
-            click.style("follow", fg="cyan"),
-            click.style("https://www.linkedin.com/company/platformio/", fg="cyan"),
-        )
-    )
-    if not os.getenv("PLATFORMIO_IDE"):
-        click.echo(
-            "- %s PlatformIO IDE for embedded development > %s"
-            % (
-                click.style("try", fg="cyan"),
-                click.style("https://platformio.org/platformio-ide", fg="cyan"),
-            )
-        )
 
     click.echo("*" * terminal_width)
     click.echo("")
