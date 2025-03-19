@@ -37,6 +37,10 @@ jobs:
         run: |
           tox -e py
 
+      - name: Python Lint
+        run: |
+          tox -e lint
+
       - name: Integration Tests
         if: ${{ matrix.python-version == '3.11' }}
         run: |
