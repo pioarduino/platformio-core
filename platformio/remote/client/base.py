@@ -25,7 +25,7 @@ from twisted.python import failure  # pylint: disable=import-error
 from twisted.spread import pb  # pylint: disable=import-error
 from zope.interface import provider  # pylint: disable=import-error
 
-from platformio import __pioremote_endpoint__, __version__, app, exception, maintenance
+from platformio import __pioremote_endpoint__, __version__, app, exception
 from platformio.remote.factory.client import RemoteClientFactory
 from platformio.remote.factory.ssl import SSLContextFactory
 
@@ -186,7 +186,5 @@ class RemoteClientBase(  # pylint: disable=too-many-instance-attributes
                 "a remote machine using `pio remote agent start` command.\n"
                 "See http://docs.platformio.org/page/plus/pio-remote.html"
             )
-        else:
-            maintenance.on_platformio_exception(Exception(err.type))
         click.secho(msg, fg="red", err=True)
         self.disconnect(exit_code=1)
