@@ -22,6 +22,8 @@ test-driven methodologies, and modern toolchains for unrivaled success.
 6.1.19 (2025-??-??)
 ~~~~~~~~~~~~~~~~~~~
 
+* Fixed a regression issue where custom build flags were not properly reflected in the `compile_commands.json <https://docs.platformio.org/en/latest/integration/compile_commands.html>`__ file, ensuring accurate compilation database generation
+
 6.1.18 (2025-03-11)
 ~~~~~~~~~~~~~~~~~~~
 
