@@ -31,7 +31,7 @@ from platformio.device.monitor.command import (
     device_monitor_cmd,
     get_project_options,
 )
-from platformio.package.manager.core import get_core_package_dir
+from platformio.project.config import ProjectConfig
 from platformio.project.exception import NotPlatformIOProjectError
 from platformio.project.options import ProjectOptions
 from platformio.run.cli import cli as cmd_run
@@ -44,7 +44,7 @@ from platformio.test.cli import cli as test_cmd
 def cli(ctx, agent):
     ctx.obj = agent
     # inject twisted dependencies
-    contrib_dir = get_core_package_dir("contrib-pioremote")
+    contrib_dir = os.path.join(ProjectConfig.get_instance().get("platformio","packages_dir"),"contrib-pioremote")
     if contrib_dir not in sys.path:
         addsitedir(contrib_dir)
         sys.path.insert(0, contrib_dir)
