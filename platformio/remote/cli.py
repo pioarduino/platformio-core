@@ -44,7 +44,8 @@ from platformio.test.cli import cli as test_cmd
 def cli(ctx, agent):
     ctx.obj = agent
     # inject twisted dependencies
-    contrib_dir = os.path.join(ProjectConfig.get_instance().get("platformio","packages_dir"),"contrib-pioremote")
+    packages_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
+    contrib_dir = os.path.join(packages_dir, "contrib-pioremote")
     if contrib_dir not in sys.path:
         addsitedir(contrib_dir)
         sys.path.insert(0, contrib_dir)

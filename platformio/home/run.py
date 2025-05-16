@@ -62,7 +62,8 @@ async def protected_page(_):
 
 
 def run_server(host, port, no_open, shutdown_timeout, home_url):
-    contrib_dir = os.path.join(ProjectConfig.get_instance().get("platformio","packages_dir"),"contrib-piohome")
+    packages_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
+    contrib_dir = os.path.join(packages_dir, "contrib-piohome")
     if not os.path.isdir(contrib_dir):
         raise PlatformioException("Invalid path to PIO Home Contrib")
 

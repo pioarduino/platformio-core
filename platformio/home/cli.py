@@ -54,7 +54,10 @@ def cli(port, host, no_open, shutdown_timeout, session_id):
     # hook for `platformio-node-helpers`
     if host == "__do_not_start__":
         # download all dependent packages
-        os.path.join(ProjectConfig.get_instance().get("platformio","packages_dir"),"contrib-piohome")
+        os.path.join(
+            ProjectConfig.get_instance().get("platformio","packages_dir"),
+            "contrib-piohome"
+        )
         return
 
     # Ensure PIO Home mimetypes are known
