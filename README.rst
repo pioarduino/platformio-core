@@ -82,13 +82,11 @@ Contributing
 
 See `contributing guidelines <https://github.com/platformio/platformio/blob/develop/CONTRIBUTING.md>`_.
 
-Telemetry / Privacy Policy
---------------------------
+Telemetry
+---------
 
-Share minimal diagnostics and usage information to help us make PlatformIO better.
-It is enabled by default. For more information see:
+Removed
 
-* `Telemetry Setting <https://docs.platformio.org/en/latest/userguide/cmd_settings.html?utm_source=github&utm_medium=core#enable-telemetry>`_
 
 License
 -------
