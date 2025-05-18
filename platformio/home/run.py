@@ -36,7 +36,7 @@ from platformio.home.rpc.handlers.platform import PlatformRPC
 from platformio.home.rpc.handlers.project import ProjectRPC
 from platformio.home.rpc.handlers.registry import RegistryRPC
 from platformio.home.rpc.server import WebSocketJSONRPCServerFactory
-from platformio.package.manager.core import get_core_package_dir
+from platformio.project.config import ProjectConfig
 from platformio.proc import force_exit
 
 
@@ -62,7 +62,8 @@ async def protected_page(_):
 
 
 def run_server(host, port, no_open, shutdown_timeout, home_url):
-    contrib_dir = get_core_package_dir("contrib-piohome")
+    packages_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
+    contrib_dir = os.path.join(packages_dir, "contrib-piohome")
     if not os.path.isdir(contrib_dir):
         raise PlatformioException("Invalid path to PIO Home Contrib")
 
