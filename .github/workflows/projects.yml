@@ -11,7 +11,7 @@ jobs:
       matrix:
         project:
           - PlatformTest:
-            repository: "Jason2866/platform-test"
+            repository: "pioarduino/platform-test"
             folder: "src"
             config_dir: "src"
             env_name: "esp32-s3"
@@ -26,7 +26,7 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.13
 
       - name: Install PlatformIO
         run: pip install -U .
