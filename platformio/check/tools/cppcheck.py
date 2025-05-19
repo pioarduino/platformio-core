@@ -105,7 +105,9 @@ class CppcheckCheckTool(CheckToolBase):
 
     def configure_command(self, language, src_file):  # pylint: disable=arguments-differ
         tool_path = os.path.join(
-            ProjectConfig.get_instance().get("platformio","packages_dir"), "tool-cppcheck", "cppcheck"
+            ProjectConfig.get_instance().get("platformio","packages_dir"),
+            "tool-cppcheck",
+            "cppcheck"
         )
 
         cmd = [

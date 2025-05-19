@@ -57,7 +57,9 @@ class ClangtidyCheckTool(CheckToolBase):
 
     def configure_command(self):
         tool_path = os.path.join(
-            ProjectConfig.get_instance().get("platformio","packages_dir"), "tool-clangtidy", "clang-tidy"
+            ProjectConfig.get_instance().get("platformio","packages_dir"),
+            "tool-clangtidy",
+            "clang-tidy"
         )
 
         cmd = [tool_path, "--quiet"]

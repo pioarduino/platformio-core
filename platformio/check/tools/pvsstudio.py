@@ -28,7 +28,8 @@ from platformio.compat import IS_WINDOWS
 
 class PvsStudioCheckTool(CheckToolBase):  # pylint: disable=too-many-instance-attributes
     pvs_path = os.path.join(
-        ProjectConfig.get_instance().get("platformio","packages_dir"), "tool-pvs-studio"
+        ProjectConfig.get_instance().get("platformio","packages_dir"),
+        "tool-pvs-studio"
     )
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,7 +80,9 @@ class PvsStudioCheckTool(CheckToolBase):  # pylint: disable=too-many-instance-at
 
     def _demangle_report(self, output_file):
         pvs_path = os.path.join(
-            ProjectConfig.get_instance().get("platformio","packages_dir"), "tool-pvs-studio"
+            ProjectConfig.get_instance().get("platformio",
+            "packages_dir"),
+            "tool-pvs-studio"
         )
         converter_tool = os.path.join(
             pvs_path,
