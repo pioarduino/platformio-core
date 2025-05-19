@@ -11,3 +11,4 @@ coverage.xml
 htmlcov
 .pytest_cache
 .vscode/settings.json
+.DS_Store

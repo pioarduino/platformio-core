@@ -22,10 +22,12 @@ import click
 from platformio import proc
 from platformio.check.defect import DefectItem
 from platformio.check.tools.base import CheckToolBase
+from platformio.project.config import ProjectConfig
 from platformio.compat import IS_WINDOWS
 
 
 class PvsStudioCheckTool(CheckToolBase):  # pylint: disable=too-many-instance-attributes
+    pvs_path = os.path.join(ProjectConfig.get_instance().get("platformio","packages_dir"), "tool-pvs-studio")
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._tmp_dir = tempfile.mkdtemp(prefix="piocheck")
@@ -34,7 +36,7 @@ class PvsStudioCheckTool(CheckToolBase):  # pylint: disable=too-many-instance-at
         self._tmp_cfg_file = self._generate_tmp_file_path() + ".cfg"
         self._tmp_cmd_file = self._generate_tmp_file_path() + ".cmd"
         self.tool_path = os.path.join(
-            self.get_tool_dir("tool-pvs-studio"),
+            self.pvs_path,
             "x64" if IS_WINDOWS else "bin",
             "pvs-studio",
         )
@@ -74,8 +76,9 @@ class PvsStudioCheckTool(CheckToolBase):  # pylint: disable=too-many-instance-at
                 self._on_defect_callback(defect)
 
     def _demangle_report(self, output_file):
+        pvs_path = os.path.join(ProjectConfig.get_instance().get("platformio","packages_dir"), "tool-pvs-studio")
         converter_tool = os.path.join(
-            self.get_tool_dir("tool-pvs-studio"),
+            pvs_path,
             "HtmlGenerator" if IS_WINDOWS else os.path.join("bin", "plog-converter"),
         )
 
