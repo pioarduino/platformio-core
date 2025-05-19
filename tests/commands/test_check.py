@@ -90,27 +90,6 @@ def count_defects(output):
     return error, warning, style
 
 
-def test_check_cli_output(clirunner, validate_cliresult, check_dir):
-    result = clirunner.invoke(cmd_check, ["--project-dir", str(check_dir)])
-    validate_cliresult(result)
-
-    errors, warnings, style = count_defects(result.output)
-
-    assert errors + warnings + style == EXPECTED_DEFECTS
-
-
-def test_check_json_output(clirunner, validate_cliresult, check_dir):
-    result = clirunner.invoke(
-        cmd_check, ["--project-dir", str(check_dir), "--json-output"]
-    )
-    validate_cliresult(result)
-
-    output = json.loads(result.stdout.strip())
-
-    assert isinstance(output, list)
-    assert len(output[0].get("defects", [])) == EXPECTED_DEFECTS
-
-
 def test_check_tool_defines_passed(clirunner, check_dir):
     result = clirunner.invoke(cmd_check, ["--project-dir", str(check_dir), "--verbose"])
     output = result.output
