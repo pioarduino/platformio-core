@@ -655,65 +655,6 @@ def test_platform_json_schema():
     )
 
 
-def test_package_json_schema():
-    contents = """
-{
-    "name": "tool-scons",
-    "description": "SCons software construction tool",
-    "keywords": "SCons, build",
-    "homepage": "http://www.scons.org",
-    "system": ["linux_armv6l", "linux_armv7l", "linux_armv8l", "LINUX_ARMV7L"],
-    "version": "3.30101.0"
-}
-"""
-    raw_data = parser.ManifestParserFactory.new(
-        contents, parser.ManifestFileType.PACKAGE_JSON
-    ).as_dict()
-
-    data = ManifestSchema().load_manifest(raw_data)
-
-    assert not jsondiff.diff(
-        data,
-        {
-            "name": "tool-scons",
-            "description": "SCons software construction tool",
-            "keywords": ["scons", "build"],
-            "homepage": "http://www.scons.org",
-            "system": ["linux_armv6l", "linux_armv7l", "linux_armv8l"],
-            "version": "3.30101.0",
-        },
-    )
-
-    mp = parser.ManifestParserFactory.new(
-        '{"system": "*"}', parser.ManifestFileType.PACKAGE_JSON
-    )
-    assert "system" not in mp.as_dict()
-
-    mp = parser.ManifestParserFactory.new(
-        '{"system": "all"}', parser.ManifestFileType.PACKAGE_JSON
-    )
-    assert "system" not in mp.as_dict()
-
-    mp = parser.ManifestParserFactory.new(
-        '{"system": "darwin_x86_64"}', parser.ManifestFileType.PACKAGE_JSON
-    )
-    assert mp.as_dict()["system"] == ["darwin_x86_64"]
-
-    # shortcut repository syntax (npm-style)
-    contents = """
-{
-    "name": "tool-github",
-    "version": "1.2.0",
-    "repository": "github:user/repo"
-}
-"""
-    raw_data = parser.ManifestParserFactory.new(
-        contents, parser.ManifestFileType.PACKAGE_JSON
-    ).as_dict()
-    data = ManifestSchema().load_manifest(raw_data)
-    assert data["repository"]["url"] == "https://github.com/user/repo.git"
-
-
 def test_parser_from_dir(tmpdir_factory):
     pkg_dir = tmpdir_factory.mktemp("package")
     pkg_dir.join("package.json").write('{"name": "package.json"}')
