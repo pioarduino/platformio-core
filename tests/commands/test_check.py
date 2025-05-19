@@ -15,12 +15,9 @@
 # pylint: disable=redefined-outer-name
 
 import json
-import os
-import sys
 
 import pytest
 
-from platformio import fs
 from platformio.check.cli import cli as cmd_check
 
 DEFAULT_CONFIG = """
