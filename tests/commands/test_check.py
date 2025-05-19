@@ -14,8 +14,6 @@
 
 # pylint: disable=redefined-outer-name
 
-import json
-
 import pytest
 
 from platformio.check.cli import cli as cmd_check
