@@ -17,7 +17,6 @@
 import os
 
 from platformio import fs
-from platformio.dependencies import get_core_dependencies
 from platformio.package.commands.install import package_install_cmd
 from platformio.package.commands.update import package_update_cmd
 from platformio.package.exception import UnknownPackageError
