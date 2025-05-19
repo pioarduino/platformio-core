@@ -19,7 +19,6 @@ import os
 import pytest
 
 from platformio import fs
-from platformio.dependencies import get_core_dependencies
 from platformio.package.commands.install import package_install_cmd
 from platformio.package.manager.library import LibraryPackageManager
 from platformio.package.manager.platform import PlatformPackageManager
