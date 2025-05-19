@@ -80,8 +80,7 @@ class PvsStudioCheckTool(CheckToolBase):  # pylint: disable=too-many-instance-at
 
     def _demangle_report(self, output_file):
         pvs_path = os.path.join(
-            ProjectConfig.get_instance().get("platformio",
-            "packages_dir"),
+            ProjectConfig.get_instance().get("platformio","packages_dir"),
             "tool-pvs-studio"
         )
         converter_tool = os.path.join(
