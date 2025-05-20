@@ -151,7 +151,7 @@ if not os.path.isdir(env.subst("$BUILD_DIR")):
     os.makedirs(env.subst("$BUILD_DIR"))
 
 # Dynamically load dependent tools
-if "compiledb" or "compiledbtc" in COMMAND_LINE_TARGETS:
+if "compiledb" in COMMAND_LINE_TARGETS or "compiledbtc" in COMMAND_LINE_TARGETS:
     env.Tool("compilation_db")
 
 env.LoadProjectOptions()
