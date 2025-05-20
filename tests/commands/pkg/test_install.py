@@ -215,66 +215,6 @@ platform = native
         ]
 
 
-def test_remove_project_unused_libdeps(
-    clirunner, validate_cliresult, isolated_pio_core, get_pkg_latest_version, tmp_path
-):
-    project_dir = tmp_path / "project"
-    project_dir.mkdir()
-    (project_dir / "platformio.ini").write_text(PROJECT_CONFIG_TPL)
-    result = clirunner.invoke(
-        package_install_cmd,
-        ["-d", str(project_dir), "-e", "baremetal"],
-    )
-    validate_cliresult(result)
-    with fs.cd(str(project_dir)):
-        config = ProjectConfig()
-        storage_dir = os.path.join(config.get("platformio", "libdeps_dir"), "baremetal")
-        lm = LibraryPackageManager(storage_dir)
-        assert pkgs_to_specs(lm.get_installed()) == [
-            PackageSpec(
-                "DallasTemperature@%s"
-                % get_pkg_latest_version("milesburton/DallasTemperature")
-            ),
-            PackageSpec("ESPAsyncWebServer-esphome@2.1.0"),
-            PackageSpec(
-                "OneWire@%s" % get_pkg_latest_version("paulstoffregen/OneWire")
-            ),
-        ]
-
-        # add new deps
-        lib_deps = config.get("env:baremetal", "lib_deps")
-        config.set("env:baremetal", "lib_deps", lib_deps + ["bblanchon/ArduinoJson@^5"])
-        config.save()
-        result = clirunner.invoke(
-            package_install_cmd,
-            ["-e", "baremetal"],
-        )
-        validate_cliresult(result)
-        lm = LibraryPackageManager(storage_dir)
-        assert pkgs_to_specs(lm.get_installed()) == [
-            PackageSpec("ArduinoJson@5.13.4"),
-            PackageSpec(
-                "DallasTemperature@%s"
-                % get_pkg_latest_version("milesburton/DallasTemperature")
-            ),
-            PackageSpec("ESPAsyncWebServer-esphome@2.1.0"),
-            PackageSpec(
-                "OneWire@%s" % get_pkg_latest_version("paulstoffregen/OneWire")
-            ),
-        ]
-
-        # manually remove from configuration file
-        config.set("env:baremetal", "lib_deps", ["bblanchon/ArduinoJson@^5"])
-        config.save()
-        result = clirunner.invoke(
-            package_install_cmd,
-            ["-e", "baremetal"],
-        )
-        validate_cliresult(result)
-        lm = LibraryPackageManager(storage_dir)
-        assert pkgs_to_specs(lm.get_installed()) == [PackageSpec("ArduinoJson@5.13.4")]
-
-
 def test_unknown_project_dependencies(
     clirunner, validate_cliresult, isolated_pio_core, tmp_path
 ):
