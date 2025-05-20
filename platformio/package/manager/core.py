@@ -52,7 +52,6 @@ def _download_and_extract(url, target_folder, base_pack_dir):
 def get_core_package_dir(name, spec=None, auto_install=True):
     # pylint: disable=unused-argument
     pm = ToolPackageManager()
-    base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
     custom_packages = get_core_dependencies(base_pack_dir)
 
     if name in custom_packages and not os.path.exists(custom_packages[name]["folder"]):
