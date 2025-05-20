@@ -13,9 +13,7 @@
 # limitations under the License.
 
 import os
-import tarfile
 
-from urllib import request
 from os.path import join
 
 from platformio.dependencies import get_core_dependencies
@@ -35,66 +33,62 @@ def get_installed_core_packages():
     return result
 
 
+def _download_and_extract(url, target_folder, base_pack_dir):
+    import shutil
+    import tarfile
+    from urllib import request
+
+    tarball_name = os.path.basename(url)
+    target_path = join(base_pack_dir, tarball_name)
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+    with request.urlopen(request.Request(url), timeout=15.0) as response:
+        if response.status == 200:
+            with open(target_path, "wb") as f:
+                f.write(response.read())
+    with tarfile.open(target_path) as tar:
+        tar.extractall(target_folder)
+
+
 def get_core_package_dir(name, spec=None, auto_install=True):
-    # pylint: disable=unused-argument
     pm = ToolPackageManager()
-    pkg_dir = None
     base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
 
-    if name in ("tool-scons") and not os.path.exists(join(base_pack_dir, "tool-scons")):
-        url = (
-            "https://github.com/pioarduino/scons/releases/"
-            "download/4.8.1/scons-local-4.8.1.tar.gz"
+    custom_packages = {
+        "tool-scons": {
+            "url": "https://github.com/pioarduino/scons/releases/download/4.8.1/scons-local-4.8.1.tar.gz",
+            "folder": join(base_pack_dir, "tool-scons"),
+        },
+        "contrib-piohome": {
+            "url": "https://github.com/pioarduino/registry/releases/download/0.0.1/contrib-piohome-3.4.4.tar.gz",
+            "folder": join(base_pack_dir, "contrib-piohome"),
+        },
+    }
+
+    if name in custom_packages and not os.path.exists(custom_packages[name]["folder"]):
+        _download_and_extract(
+            custom_packages[name]["url"],
+            custom_packages[name]["folder"],
+            base_pack_dir,
         )
-        target_path = join(base_pack_dir, "tool-scons.tar.gz")
-        extract_folder = join(base_pack_dir, "tool-scons")
-        if not os.path.exists(extract_folder):
-            os.makedirs(extract_folder)
-        with request.urlopen(request.Request(url), timeout=15.0) as response:
-            if response.status == 200:
-                with open(target_path, "wb") as f:
-                    f.write(response.read())
-        with tarfile.open(target_path) as tar:
-            tar.extractall(extract_folder)
 
     try:
-        if "tool-scons" in name:
-            pkg_dir = pm.get_package("tool-scons").path
-            assert pm.install("tool-scons")
-    except Exception: # pylint: disable=broad-except
+        if name in custom_packages:
+            pkg = pm.get_package(name)
+            if pkg:
+                pkg_dir = pkg.path
+                if auto_install:
+                    assert pm.install(name)
+                return pkg_dir
+    except Exception:
         print(
             "Maybe missing entry(s) in platformio.ini ?\n"
             "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
             "In all cases please restart VSC/PlatformIO to try to auto fix issues."
         )
+        return None
 
-    if name in ("contrib-piohome") and not os.path.exists(join(base_pack_dir, "contrib-piohome")):
-        url = (
-            "https://github.com/pioarduino/registry/releases/"
-            "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
-        )
-        target_path = join(base_pack_dir, "contrib-piohome.tar.gz")
-        extract_folder = join(base_pack_dir, "contrib-piohome")
-        if not os.path.exists(extract_folder):
-            os.makedirs(extract_folder)
-        with request.urlopen(request.Request(url), timeout=15.0) as response:
-            if response.status == 200:
-                with open(target_path, "wb") as f:
-                    f.write(response.read())
-        with tarfile.open(target_path) as tar:
-            tar.extractall(extract_folder)
-
-    try:
-        if "contrib-piohome" in name:
-            pkg_dir = pm.get_package("contrib-piohome").path
-            assert pm.install("contrib-piohome")
-    except Exception: # pylint: disable=broad-except
-        print(
-            "Maybe missing entry(s) in platformio.ini ?\n"
-            "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
-            "In all cases please restart VSC/PlatformIO to try to auto fix issues."
-        )
-    return pkg_dir
+    return None
 
 
 def update_core_packages():
