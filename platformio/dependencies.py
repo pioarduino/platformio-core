@@ -17,18 +17,14 @@ from platformio.compat import is_proxy_set
 
 def get_core_dependencies():
     return {
-        "tool-scons": {
-            "url": (
-                "https://github.com/pioarduino/scons/releases/"
-                "download/4.8.1/scons-local-4.8.1.tar.gz"
-            ),
-        },
-        "contrib-piohome": {
-            "url": (
-                "https://github.com/pioarduino/registry/releases/"
-                "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
-            ),
-        },
+        "contrib-piohome": (
+            "https://github.com/pioarduino/registry/releases/"
+            "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
+        ),
+        "tool-scons": (
+            "https://github.com/pioarduino/scons/releases/"
+            "download/4.8.1/scons-local-4.8.1.tar.gz"
+        ),
     }
 
 
