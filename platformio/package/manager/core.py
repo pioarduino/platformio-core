@@ -22,7 +22,6 @@ from platformio.dependencies import get_core_dependencies
 from platformio.package.manager.tool import ToolPackageManager
 from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
-from platformio.dependencies import get_core_dependencies
 
 def get_installed_core_packages():
     result = []
