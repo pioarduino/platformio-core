@@ -36,7 +36,7 @@ def get_installed_core_packages():
     return result
 
 
-def _download_and_extract(url, target_folder, base_pack_dir):
+def _download_and_extract(url, target_folder):
     tarball_name = os.path.basename(url)
     target_path = join(base_pack_dir, tarball_name)
     if not os.path.exists(target_folder):
@@ -58,7 +58,6 @@ def get_core_package_dir(name, spec=None, auto_install=True):
         _download_and_extract(
             custom_packages[name]["url"],
             custom_packages[name]["folder"],
-            base_pack_dir,
         )
 
     try:
