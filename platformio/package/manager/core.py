@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import os
+import tarfile
 
+from urllib import request
 from os.path import join
 
 from platformio.dependencies import get_core_dependencies
@@ -34,10 +36,6 @@ def get_installed_core_packages():
 
 
 def _download_and_extract(url, target_folder, base_pack_dir):
-    import shutil
-    import tarfile
-    from urllib import request
-
     tarball_name = os.path.basename(url)
     target_path = join(base_pack_dir, tarball_name)
     if not os.path.exists(target_folder):
@@ -51,6 +49,7 @@ def _download_and_extract(url, target_folder, base_pack_dir):
 
 
 def get_core_package_dir(name, spec=None, auto_install=True):
+    # pylint: disable=unused-argument
     pm = ToolPackageManager()
     base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
 
@@ -80,7 +79,7 @@ def get_core_package_dir(name, spec=None, auto_install=True):
                 if auto_install:
                     assert pm.install(name)
                 return pkg_dir
-    except Exception:
+    except Exception: # pylint: disable=broad-except
         print(
             "Maybe missing entry(s) in platformio.ini ?\n"
             "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
