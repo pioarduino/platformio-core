@@ -22,7 +22,7 @@ from platformio.dependencies import get_core_dependencies
 from platformio.package.manager.tool import ToolPackageManager
 from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
-
+from platformio.dependencies import get_core_dependencies
 
 def get_installed_core_packages():
     result = []
@@ -52,23 +52,7 @@ def get_core_package_dir(name, spec=None, auto_install=True):
     # pylint: disable=unused-argument
     pm = ToolPackageManager()
     base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
-
-    custom_packages = {
-        "tool-scons": {
-            "url": (
-                "https://github.com/pioarduino/scons/releases/"
-                "download/4.8.1/scons-local-4.8.1.tar.gz"
-            ),
-            "folder": join(base_pack_dir, "tool-scons"),
-        },
-        "contrib-piohome": {
-            "url": (
-                "https://github.com/pioarduino/registry/releases/"
-                "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
-            ),
-            "folder": join(base_pack_dir, "contrib-piohome"),
-        },
-    }
+    custom_packages = get_core_dependencies(base_pack_dir)
 
     if name in custom_packages and not os.path.exists(custom_packages[name]["folder"]):
         _download_and_extract(
