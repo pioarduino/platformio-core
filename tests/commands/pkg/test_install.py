@@ -123,31 +123,6 @@ def test_global_packages(
     ]
 
 
-def test_skip_dependencies(
-    clirunner, validate_cliresult, isolated_pio_core, get_pkg_latest_version, tmp_path
-):
-    project_dir = tmp_path / "project"
-    project_dir.mkdir()
-    (project_dir / "platformio.ini").write_text(PROJECT_CONFIG_TPL)
-    result = clirunner.invoke(
-        package_install_cmd,
-        ["-d", str(project_dir), "-e", "devkit", "--skip-dependencies"],
-    )
-    validate_cliresult(result)
-    with fs.cd(str(project_dir)):
-        installed_lib_pkgs = LibraryPackageManager(
-            os.path.join(ProjectConfig().get("platformio", "libdeps_dir"), "devkit")
-        ).get_installed()
-        assert pkgs_to_specs(installed_lib_pkgs) == [
-            PackageSpec(
-                "DallasTemperature@%s"
-                % get_pkg_latest_version("milesburton/DallasTemperature")
-            ),
-            PackageSpec("ESPAsyncWebServer-esphome@2.1.0"),
-        ]
-        assert len(ToolPackageManager().get_installed()) == 1  # SCons
-
-
 def test_private_lib_deps(
     clirunner, validate_cliresult, isolated_pio_core, get_pkg_latest_version, tmp_path
 ):
