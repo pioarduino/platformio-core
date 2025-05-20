@@ -155,6 +155,10 @@ def ProcessCompileDbToolchainOption(env):
         print("Use 'pio run -t compiledbtc' instead.")
         ProccessCompileDb(env, include_toolchain=True)
 
+def ProcessCompileDbIncludeToolchainOption(env):
+    if "compiledbtc" in COMMAND_LINE_TARGETS:
+        ProccessCompileDb(env, include_toolchain=True)
+
 def ProcessProjectDeps(env):
     plb = env.ConfigureProjectLibBuilder()
 
