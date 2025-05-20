@@ -30,9 +30,6 @@ PROJECT_CONFIG_TPL = """
 platform = platformio/atmelavr@^3.4.0
 lib_deps = milesburton/DallasTemperature@^3.9.1
 
-[env:baremetal]
-board = uno
-
 [env:devkit]
 framework = arduino
 board = attiny88
