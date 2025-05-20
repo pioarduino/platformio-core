@@ -28,7 +28,7 @@ base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
 def get_installed_core_packages():
     result = []
     pm = ToolPackageManager()
-    for name, requirements in get_core_dependencies(base_pack_dir).items(): # pylint: disable=no-member
+    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if pkg:
@@ -52,12 +52,13 @@ def _download_and_extract(url, target_folder):
 def get_core_package_dir(name, spec=None, auto_install=True):
     # pylint: disable=unused-argument
     pm = ToolPackageManager()
-    custom_packages = get_core_dependencies(base_pack_dir)
+    custom_packages = get_core_dependencies()
+    tool_path = join(base_pack_dir, name)
 
-    if name in custom_packages and not os.path.exists(custom_packages[name]["folder"]):
+    if name in custom_packages and not os.path.exists(tool_path):
         _download_and_extract(
             custom_packages[name]["url"],
-            custom_packages[name]["folder"],
+            tool_path,
         )
 
     try:
@@ -88,7 +89,7 @@ def remove_unnecessary_core_packages(dry_run=False):
     pm = ToolPackageManager()
     best_pkg_versions = {}
 
-    for name, requirements in get_core_dependencies(base_pack_dir).items(): # pylint: disable=no-member
+    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if not pkg:
