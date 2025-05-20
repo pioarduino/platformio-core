@@ -60,6 +60,7 @@ def GetBuildType(env):
 def BuildProgram(env):
     env.ProcessProgramDeps()
     env.ProcessCompileDbToolchainOption()
+    env.ProcessCompileDbIncludeToolchainOption()
     env.ProcessProjectDeps()
 
     # append into the beginning a main LD script
@@ -128,10 +129,7 @@ def ProcessProgramDeps(env):
     env.ProcessUnFlags(env.get("BUILD_UNFLAGS"))
 
 
-def ProcessCompileDbToolchainOption(env):
-    if "compiledb" not in COMMAND_LINE_TARGETS:
-        return
-
+def ProccessCompileDb(env, include_toolchain=False):
     # Resolve absolute path of toolchain
     for cmd in ("CC", "CXX", "AS"):
         if cmd not in env:
@@ -142,12 +140,20 @@ def ProcessCompileDbToolchainOption(env):
         if " " in env[cmd]:  # issue #4998: Space in compilator path
             env[cmd] = f'"{env[cmd]}"'
 
-    if env.get("COMPILATIONDB_INCLUDE_TOOLCHAIN"):
-        print("Warning! `COMPILATIONDB_INCLUDE_TOOLCHAIN` is scoping")
+    if include_toolchain:
         for scope, includes in env.DumpIntegrationIncludes().items():
             if scope in ("toolchain",):
                 env.Append(CPPPATH=includes)
 
+
+def ProcessCompileDbToolchainOption(env):
+    if "compiledb" in COMMAND_LINE_TARGETS:
+        ProccessCompileDb(env)
+
+    if env.get("COMPILATIONDB_INCLUDE_TOOLCHAIN"):
+        print("Warning! `COMPILATIONDB_INCLUDE_TOOLCHAIN` is scoping")
+        print("Use 'pio run -t compiledbtc' instead.")
+        ProccessCompileDb(env, include_toolchain=True)
 
 def ProcessProjectDeps(env):
     plb = env.ConfigureProjectLibBuilder()
@@ -388,6 +394,7 @@ def generate(env):
     env.AddMethod(BuildProgram)
     env.AddMethod(ProcessProgramDeps)
     env.AddMethod(ProcessCompileDbToolchainOption)
+    env.AddMethod(ProcessCompileDbIncludeToolchainOption)
     env.AddMethod(ProcessProjectDeps)
     env.AddMethod(ParseFlagsExtended)
     env.AddMethod(ProcessFlags)
