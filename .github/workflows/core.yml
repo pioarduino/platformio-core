@@ -45,13 +45,3 @@ jobs:
         if: ${{ matrix.python-version == '3.11' }}
         run: |
           tox -e testcore
-
-      - name: Slack Notification
-        uses: homoluctus/slatify@master
-        if: failure()
-        with:
-          type: ${{ job.status }}
-          job_name: '*Core*'
-          commit: true
-          url: ${{ secrets.SLACK_BUILD_WEBHOOK }}
-          token: ${{ secrets.SLACK_GITHUB_TOKEN }}
