@@ -33,9 +33,6 @@ lib_deps =
     milesburton/DallasTemperature@^4.0.4
     https://github.com/esphome/ESPAsyncWebServer/archive/refs/tags/v2.1.0.zip
 
-[env:baremetal]
-board = uno
-
 [env:devkit]
 framework = arduino
 board = attiny88
