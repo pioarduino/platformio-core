@@ -23,10 +23,12 @@ from platformio.package.manager.tool import ToolPackageManager
 from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
 
+base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
+
 def get_installed_core_packages():
     result = []
     pm = ToolPackageManager()
-    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
+    for name, requirements in get_core_dependencies(base_pack_dir).items(): # pylint: disable=no-member
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if pkg:
@@ -88,7 +90,7 @@ def remove_unnecessary_core_packages(dry_run=False):
     pm = ToolPackageManager()
     best_pkg_versions = {}
 
-    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
+    for name, requirements in get_core_dependencies(base_pack_dir).items(): # pylint: disable=no-member
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if not pkg:
