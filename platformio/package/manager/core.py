@@ -63,7 +63,7 @@ def get_core_package_dir(name, spec=None, auto_install=True):
         },
         "contrib-piohome": {
             "url": (
-                "https://github.com/pioarduino/registry/releases/
+                "https://github.com/pioarduino/registry/releases/"
                 "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
             ),
             "folder": join(base_pack_dir, "contrib-piohome"),
