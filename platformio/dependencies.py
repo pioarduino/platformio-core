@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from platformio.compat import is_proxy_set
 from os.path import join
+from platformio.compat import is_proxy_set
 
 
 def get_core_dependencies(base_pack_dir):
