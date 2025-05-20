@@ -13,22 +13,18 @@
 # limitations under the License.
 
 import os
-import tarfile
 
-from urllib import request
-from os.path import join
-
+from platformio import exception
 from platformio.dependencies import get_core_dependencies
+from platformio.package.exception import UnknownPackageError
 from platformio.package.manager.tool import ToolPackageManager
-from platformio.project.config import ProjectConfig
 from platformio.package.meta import PackageSpec
 
-base_pack_dir = ProjectConfig.get_instance().get("platformio", "packages_dir")
 
 def get_installed_core_packages():
     result = []
     pm = ToolPackageManager()
-    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
+    for name, requirements in get_core_dependencies().items():
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if pkg:
@@ -36,51 +32,32 @@ def get_installed_core_packages():
     return result
 
 
-def _download_and_extract(url, target_folder):
-    tarball_name = os.path.basename(url)
-    target_path = join(base_pack_dir, tarball_name)
-    if not os.path.exists(target_folder):
-        os.makedirs(target_folder)
-    with request.urlopen(request.Request(url), timeout=15.0) as response:
-        if response.status == 200:
-            with open(target_path, "wb") as f:
-                f.write(response.read())
-    with tarfile.open(target_path) as tar:
-        tar.extractall(target_folder)
-
-
 def get_core_package_dir(name, spec=None, auto_install=True):
-    # pylint: disable=unused-argument
+    if name not in get_core_dependencies():
+        raise exception.PlatformioException("Please upgrade PlatformIO Core")
     pm = ToolPackageManager()
-    custom_packages = get_core_dependencies()
-    tool_path = join(base_pack_dir, name)
-
-    if name in custom_packages and not os.path.exists(tool_path):
-        _download_and_extract(
-            custom_packages[name]["url"],
-            tool_path,
-        )
-
-    try:
-        if name in custom_packages:
-            pkg = pm.get_package(name)
-            if pkg:
-                pkg_dir = pkg.path
-                if auto_install:
-                    assert pm.install(name)
-                return pkg_dir
-    except Exception: # pylint: disable=broad-except
-        print(
-            "Maybe missing entry(s) in platformio.ini ?\n"
-            "Please add  \"check_tool = cppcheck\" to use code check tool.\n"
-            "In all cases please restart VSC/PlatformIO to try to auto fix issues."
-        )
+    spec = spec or PackageSpec(
+        owner="platformio", name=name, requirements=get_core_dependencies()[name]
+    )
+    pkg = pm.get_package(spec)
+    if pkg:
+        return pkg.path
+    if not auto_install:
         return None
-
-    return None
+    assert pm.install(spec)
+    remove_unnecessary_core_packages()
+    return pm.get_package(spec).path
 
 
 def update_core_packages():
+    pm = ToolPackageManager()
+    for name, requirements in get_core_dependencies().items():
+        spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
+        try:
+            pm.update(spec, spec)
+        except UnknownPackageError:
+            pass
+    remove_unnecessary_core_packages()
     return True
 
 
@@ -89,7 +66,7 @@ def remove_unnecessary_core_packages(dry_run=False):
     pm = ToolPackageManager()
     best_pkg_versions = {}
 
-    for name, requirements in get_core_dependencies().items(): # pylint: disable=no-member
+    for name, requirements in get_core_dependencies().items():
         spec = PackageSpec(owner="platformio", name=name, requirements=requirements)
         pkg = pm.get_package(spec)
         if not pkg:
