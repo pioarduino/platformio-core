@@ -16,21 +16,19 @@ from os.path import join
 from platformio.compat import is_proxy_set
 
 
-def get_core_dependencies(base_pack_dir):
+def get_core_dependencies():
     return {
         "tool-scons": {
             "url": (
                 "https://github.com/pioarduino/scons/releases/"
                 "download/4.8.1/scons-local-4.8.1.tar.gz"
             ),
-            "folder": join(base_pack_dir, "tool-scons"),
         },
         "contrib-piohome": {
             "url": (
                 "https://github.com/pioarduino/registry/releases/"
                 "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
             ),
-            "folder": join(base_pack_dir, "contrib-piohome"),
         },
     }
 
