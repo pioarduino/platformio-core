@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from os.path import join
 from platformio.compat import is_proxy_set
 
 
