@@ -87,6 +87,7 @@ def get_project_watch_lib_dirs():
     return result
 
 
+# Backward compatibility alias
 get_project_all_lib_dirs = get_project_watch_lib_dirs
 
 
@@ -269,6 +270,14 @@ def _load_build_metadata(project_dir, env_names, build_type=None):
 
 
 def _get_cached_build_metadata(env_names):
+    """Get cached build metadata from idedata.json files.
+    
+    Args:
+        env_names (list): List of environment names
+        
+    Returns:
+        dict: Dictionary mapping environment names to their build metadata
+    """
     build_dir = ProjectConfig.get_instance().get("platformio", "build_dir")
     result = {}
     for env_name in env_names:
