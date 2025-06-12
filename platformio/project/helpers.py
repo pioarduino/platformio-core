@@ -95,7 +95,18 @@ def compute_project_checksum(config):
     checksum = sha1(hashlib_encode_data(__version__))
 
     # configuration file state
-    config_data = config.to_json()
+    filtered_config = config.deepcopy()
+
+    # Standardmäßig lib_ldf_mode aus Hash-Berechnung ausschließen
+    # Umgebungsvariable PIO_INCLUDE_LDF_MODE_IN_HASH stellt ursprüngliches Verhalten wieder her
+    if not os.environ.get('PIO_INCLUDE_LDF_MODE_IN_HASH'):
+        # Entferne lib_ldf_mode aus allen Environment-Sektionen
+        for section_name in filtered_config.sections():
+            if section_name.startswith('env:'):
+                if filtered_config.has_option(section_name, 'lib_ldf_mode'):
+                    filtered_config.remove_option(section_name, 'lib_ldf_mode')
+
+    config_data = filtered_config.to_json()
     if IS_WINDOWS:
         # issue #4600: fix drive letter
         config_data = re.sub(
