@@ -131,11 +131,7 @@ def get_default_projects_dir():
 
 def compute_project_checksum(config):
     """Compute project checksum based on configuration and file structure.
-    
-    By default, lib_ldf_mode is excluded from hash calculation to prevent
-    unnecessary rebuilds when only the library dependency finder mode changes.
-    Set PIO_INCLUDE_LDF_MODE_IN_HASH environment variable to restore original behavior.
-    
+
     Args:
         config (ProjectConfig): Project configuration instance
         
@@ -146,18 +142,7 @@ def compute_project_checksum(config):
     checksum = sha1(hashlib_encode_data(__version__))
 
     # configuration file state
-    filtered_config = config.deepcopy()
-
-    # By default exclude lib_ldf_mode from hash calculation
-    # Environment variable PIO_INCLUDE_LDF_MODE_IN_HASH restores original behavior
-    if not os.environ.get('PIO_INCLUDE_LDF_MODE_IN_HASH'):
-        # Remove lib_ldf_mode from all environment sections
-        for section_name in filtered_config.sections():
-            if section_name.startswith('env:'):
-                if filtered_config.has_option(section_name, 'lib_ldf_mode'):
-                    filtered_config.remove_option(section_name, 'lib_ldf_mode')
-
-    config_data = filtered_config.to_json()
+    config_data = config.to_json()
     if IS_WINDOWS:
         # issue #4600: fix drive letter
         config_data = re.sub(
