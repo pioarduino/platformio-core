@@ -12,33 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = (6, 1, 19)
+VERSION = (6, 1, 18)
 __version__ = ".".join([str(s) for s in VERSION])
 
-__title__ = "platformio"
+__title__ = "pioarduino core"
 __description__ = (
-    "Your Gateway to Embedded Software Development Excellence. "
-    "Unlock the true potential of embedded software development "
-    "with PlatformIO's collaborative ecosystem, embracing "
-    "declarative principles, test-driven methodologies, and "
-    "modern toolchains for unrivaled success."
+    "pioarduino core is needed to run pioarduino Platform espressif32. "
 )
-__url__ = "https://platformio.org"
+__url__ = "https://github.com/pioarduino"
 
-__author__ = "PlatformIO Labs"
-__email__ = "contact@piolabs.com"
+__author__ = "PlatformIO Labs and pioarduino"
+__email__ = ""
 
 __license__ = "Apache Software License"
-__copyright__ = "Copyright 2014-present PlatformIO Labs"
+__copyright__ = "Copyright 2014-present PlatformIO Labs and pioarduino"
 
 __accounts_api__ = "https://api.accounts.platformio.org"
-__registry_mirror_hosts__ = [
-    "registry.platformio.org",
-    "registry.nm1.platformio.org",
-]
 __pioremote_endpoint__ = "ssl:host=remote.platformio.org:port=4413"
 
 __check_internet_hosts__ = [
     "185.199.110.153",  # Github.com
     "github.com",
-] + __registry_mirror_hosts__
+]
