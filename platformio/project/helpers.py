@@ -25,16 +25,37 @@ from platformio.project.config import ProjectConfig
 
 
 def get_project_dir():
+    """Get the current project directory.
+    
+    Returns:
+        str: Current working directory path
+    """
     return os.getcwd()
 
 
 def is_platformio_project(project_dir=None):
+    """Check if the given directory is a PlatformIO project.
+    
+    Args:
+        project_dir (str, optional): Directory path to check. Defaults to current directory.
+        
+    Returns:
+        bool: True if directory contains platformio.ini file
+    """
     if not project_dir:
         project_dir = get_project_dir()
     return os.path.isfile(os.path.join(project_dir, "platformio.ini"))
 
 
 def find_project_dir_above(path):
+    """Find PlatformIO project directory by traversing up the directory tree.
+    
+    Args:
+        path (str): Starting path to search from
+        
+    Returns:
+        str or None: Path to project directory if found, None otherwise
+    """
     if os.path.isfile(path):
         path = os.path.dirname(path)
     if is_platformio_project(path):
@@ -45,7 +66,13 @@ def find_project_dir_above(path):
 
 
 def get_project_watch_lib_dirs():
-    """Used by platformio-node-helpers.project.observer.fetchLibDirs"""
+    """Get library directories that should be watched for changes.
+    
+    Used by platformio-node-helpers.project.observer.fetchLibDirs
+    
+    Returns:
+        list: List of library directory paths
+    """
     config = ProjectConfig.get_instance()
     result = [
         config.get("platformio", "globallib_dir"),
@@ -60,15 +87,27 @@ def get_project_watch_lib_dirs():
     return result
 
 
+# Backward compatibility alias
 get_project_all_lib_dirs = get_project_watch_lib_dirs
 
 
 def get_project_cache_dir():
-    """Deprecated, use ProjectConfig.get("platformio", "cache_dir") instead"""
+    """Get project cache directory.
+    
+    Deprecated, use ProjectConfig.get("platformio", "cache_dir") instead
+    
+    Returns:
+        str: Cache directory path
+    """
     return ProjectConfig.get_instance().get("platformio", "cache_dir")
 
 
 def get_default_projects_dir():
+    """Get the default directory for PlatformIO projects.
+    
+    Returns:
+        str: Default projects directory path (usually ~/Documents/PlatformIO/Projects)
+    """
     docs_dir = os.path.join(fs.expanduser("~"), "Documents")
     try:
         assert IS_WINDOWS
@@ -91,6 +130,14 @@ def get_default_projects_dir():
 
 
 def compute_project_checksum(config):
+    """Compute project checksum based on configuration and file structure.
+
+    Args:
+        config (ProjectConfig): Project configuration instance
+        
+    Returns:
+        str: Hexadecimal checksum string
+    """
     # rebuild when PIO Core version changes
     checksum = sha1(hashlib_encode_data(__version__))
 
@@ -132,6 +179,17 @@ def compute_project_checksum(config):
 
 
 def load_build_metadata(project_dir, env_or_envs, cache=False, build_type=None):
+    """Load build metadata for specified environments.
+    
+    Args:
+        project_dir (str): Project directory path
+        env_or_envs (str or list): Environment name(s) to load metadata for
+        cache (bool, optional): Use cached metadata if available. Defaults to False.
+        build_type (str, optional): Build type (release/debug). Defaults to None.
+        
+    Returns:
+        dict or None: Build metadata dictionary or None if not available
+    """
     assert env_or_envs
     env_names = env_or_envs
     if not isinstance(env_names, list):
@@ -163,6 +221,19 @@ load_project_ide_data = load_build_metadata
 
 
 def _load_build_metadata(project_dir, env_names, build_type=None):
+    """Internal function to load build metadata by running idedata target.
+    
+    Args:
+        project_dir (str): Project directory path
+        env_names (list): List of environment names
+        build_type (str, optional): Build type. Defaults to None.
+        
+    Returns:
+        dict: Build metadata dictionary
+        
+    Raises:
+        exception.UserSideException: If build metadata generation fails
+    """
     # pylint: disable=import-outside-toplevel
     from platformio.run.cli import cli as cmd_run
 
@@ -184,6 +255,14 @@ def _load_build_metadata(project_dir, env_names, build_type=None):
 
 
 def _get_cached_build_metadata(env_names):
+    """Get cached build metadata from idedata.json files.
+    
+    Args:
+        env_names (list): List of environment names
+        
+    Returns:
+        dict: Dictionary mapping environment names to their build metadata
+    """
     build_dir = ProjectConfig.get_instance().get("platformio", "build_dir")
     result = {}
     for env_name in env_names:

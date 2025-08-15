@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import re
-from os.path import join
 
 from platformio.check.defect import DefectItem
 from platformio.check.tools.base import CheckToolBase
+from platformio.project.config import ProjectConfig
 
 
 class ClangtidyCheckTool(CheckToolBase):
@@ -55,7 +56,11 @@ class ClangtidyCheckTool(CheckToolBase):
         return cmd_result["returncode"] < 2
 
     def configure_command(self):
-        tool_path = join(self.get_tool_dir("tool-clangtidy"), "clang-tidy")
+        tool_path = os.path.join(
+            ProjectConfig.get_instance().get("platformio","packages_dir"),
+            "tool-clangtidy",
+            "clang-tidy"
+        )
 
         cmd = [tool_path, "--quiet"]
         flags = self.get_flags("clangtidy")

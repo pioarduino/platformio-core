@@ -105,7 +105,7 @@ def remote_update(agents, only_check, dry_run):
     default=os.getcwd,
     type=click.Path(exists=True, file_okay=True, dir_okay=True, writable=True),
 )
-@click.option("--disable-auto-clean", is_flag=True)
+@click.option("--auto-clean/--disable-auto-clean", default=False, help="Enable/disable auto clean")
 @click.option("-r", "--force-remote", is_flag=True)
 @click.option("-s", "--silent", is_flag=True)
 @click.option("-v", "--verbose", is_flag=True)

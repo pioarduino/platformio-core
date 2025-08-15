@@ -17,8 +17,14 @@ from platformio.compat import is_proxy_set
 
 def get_core_dependencies():
     return {
-        "tool-scons",
-        "contrib-piohome",
+        "contrib-piohome": (
+            "https://github.com/pioarduino/registry/releases/"
+            "download/0.0.1/contrib-piohome-3.4.4.tar.gz"
+        ),
+        "tool-scons": (
+            "https://github.com/pioarduino/scons/releases/"
+            "download/4.8.1/scons-local-4.8.1.tar.gz"
+        ),
     }
 
 
@@ -40,8 +46,8 @@ def get_pip_dependencies():
     home = [
         # PIO Home requirements
         "ajsonrpc == 1.2.*",
-        "starlette >=0.19, <0.47",
-        "uvicorn >=0.16, <0.35",
+        "starlette >=0.19, <0.48",
+        "uvicorn >=0.16, <0.36",
         "wsproto == 1.*",
     ]
 
