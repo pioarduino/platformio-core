@@ -38,6 +38,9 @@ def on_cmd_start(ctx, caller):
 
 
 def on_cmd_end():
+    # pioarduino change: never check for upgrades
+    return
+
     if PlatformioCLI.in_silence():
         return
 
@@ -50,7 +53,7 @@ def on_cmd_end():
         exception.GetLatestVersionError,
     ):
         click.secho(
-            "Failed to check for PlatformIO upgrades. "
+            "Failed to check for pioarduino upgrades. "
             "Please check your Internet connection.",
             fg="red",
         )
@@ -116,28 +119,15 @@ def after_upgrade(ctx):
 
     if last_version_str == "0.0.0":
         app.set_state_item("last_version", __version__)
-        return print_welcome_banner()
+        return None
 
     last_version = pepver_to_semver(last_version_str)
     current_version = pepver_to_semver(__version__)
 
     if last_version > current_version and not last_version.prerelease:
-        click.secho("*" * terminal_width, fg="yellow")
-        click.secho(
-            "Obsolete PIO Core v%s is used (previous was %s)"
-            % (__version__, last_version_str),
-            fg="yellow",
-        )
-        click.secho("Please remove multiple PIO Cores from a system:", fg="yellow")
-        click.secho(
-            "https://docs.platformio.org/en/latest/core"
-            "/installation/troubleshooting.html",
-            fg="cyan",
-        )
-        click.secho("*" * terminal_width, fg="yellow")
         return None
 
-    click.secho("Please wait while upgrading PlatformIO...", fg="yellow")
+    click.secho("Please wait while upgrading...", fg="yellow")
 
     # Update PlatformIO's Core packages
     cleanup_content_cache("http")
@@ -147,30 +137,16 @@ def after_upgrade(ctx):
     if u.run(ctx):
         app.set_state_item("last_version", __version__)
         click.secho(
-            "PlatformIO has been successfully upgraded to %s!\n" % __version__,
+            "Pio has been successfully upgraded to %s!\n" % __version__,
             fg="green",
         )
 
-    return print_welcome_banner()
-
-
-def print_welcome_banner():
-    terminal_width = shutil.get_terminal_size().columns
-    click.echo("*" * terminal_width)
-    click.echo("If you like %s, please:" % (click.style("PlatformIO", fg="cyan")))
-    click.echo(
-        "- %s it on GitHub > %s"
-        % (
-            click.style("star", fg="cyan"),
-            click.style("https://github.com/platformio/platformio-core", fg="cyan"),
-        )
-    )
-
-    click.echo("*" * terminal_width)
-    click.echo("")
+    return None
 
 
 def check_platformio_upgrade():
+    # pioarduino change: never check for pioarduino upgrade
+    return
     interval = int(app.get_setting("check_platformio_interval")) * 3600 * 24
     check_state = app.get_state_item("last_check", {})
     last_checked_time = check_state.get("platformio_upgrade", 0)
@@ -240,7 +216,7 @@ def check_prune_system():
     click.echo()
     click.echo("*" * terminal_width)
     click.secho(
-        "We found %s of unnecessary PlatformIO system data (temporary files, "
+        "We found %s of unnecessary pioarduino system data (temporary files, "
         "unnecessary packages, etc.).\nUse `pio system prune --dry-run` to list "
         "them or `pio system prune` to save disk space."
         % fs.humanize_file_size(unnecessary_size),
