@@ -19,11 +19,9 @@ from time import time
 import click
 import semantic_version
 
-from platformio import __version__, app, exception, fs
+from platformio import __version__, app, fs
 from platformio.cache import cleanup_content_cache
 from platformio.cli import PlatformioCLI
-from platformio.commands.upgrade import get_latest_version
-from platformio.http import HTTPClientError, InternetConnectionError, ensure_internet_on
 from platformio.package.manager.core import update_core_packages
 from platformio.package.version import pepver_to_semver
 from platformio.system.prune import calculate_unnecessary_system_data
@@ -95,7 +93,6 @@ class Upgrader:
 
 
 def after_upgrade(ctx):
-    terminal_width = shutil.get_terminal_size().columns
     last_version_str = app.get_state_item("last_version", "0.0.0")
     if last_version_str == __version__:
         return None
