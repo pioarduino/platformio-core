@@ -41,23 +41,6 @@ def on_cmd_end():
     # pioarduino change: never check for upgrades
     return
 
-    if PlatformioCLI.in_silence():
-        return
-
-    try:
-        check_platformio_upgrade()
-        check_prune_system()
-    except (
-        HTTPClientError,
-        InternetConnectionError,
-        exception.GetLatestVersionError,
-    ):
-        click.secho(
-            "Failed to check for pioarduino upgrades. "
-            "Please check your Internet connection.",
-            fg="red",
-        )
-
 
 def set_caller(caller=None):
     caller = caller or os.getenv("PLATFORMIO_CALLER")
@@ -145,50 +128,8 @@ def after_upgrade(ctx):
 
 
 def check_platformio_upgrade():
-    # pioarduino change: never check for pioarduino upgrade
+    # pioarduino change: never check for upgrade
     return
-    interval = int(app.get_setting("check_platformio_interval")) * 3600 * 24
-    check_state = app.get_state_item("last_check", {})
-    last_checked_time = check_state.get("platformio_upgrade", 0)
-    if (time() - interval) < last_checked_time:
-        return
-
-    check_state["platformio_upgrade"] = int(time())
-    app.set_state_item("last_check", check_state)
-    if not last_checked_time:
-        return
-
-    ensure_internet_on(raise_exception=True)
-
-    # Update PlatformIO Core packages
-    update_core_packages()
-
-    latest_version = get_latest_version()
-    if pepver_to_semver(latest_version) <= pepver_to_semver(__version__):
-        return
-
-    terminal_width = shutil.get_terminal_size().columns
-
-    click.echo("")
-    click.echo("*" * terminal_width)
-    click.secho(
-        "There is a new version %s of PlatformIO available.\n"
-        "Please upgrade it via `" % latest_version,
-        fg="yellow",
-        nl=False,
-    )
-    if os.path.join("Cellar", "platformio") in fs.get_source_dir():
-        click.secho("brew update && brew upgrade", fg="cyan", nl=False)
-        click.secho("` command.", fg="yellow")
-    else:
-        click.secho("platformio upgrade", fg="cyan", nl=False)
-        click.secho("` or `", fg="yellow", nl=False)
-        click.secho("python -m pip install -U platformio", fg="cyan", nl=False)
-        click.secho("` command.", fg="yellow")
-    click.secho("Changes: ", fg="yellow", nl=False)
-    click.secho("https://docs.platformio.org/en/latest/history.html", fg="cyan")
-    click.echo("*" * terminal_width)
-    click.echo("")
 
 
 def check_prune_system():
