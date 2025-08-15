@@ -28,6 +28,10 @@ __license__ = "Apache Software License"
 __copyright__ = "Copyright 2014-present PlatformIO Labs and pioarduino"
 
 __accounts_api__ = "https://api.accounts.platformio.org"
+__registry_mirror_hosts__ = [
+    "registry.platformio.org",
+    "registry.nm1.platformio.org",
+]
 __pioremote_endpoint__ = "ssl:host=remote.platformio.org:port=4413"
 
 __check_internet_hosts__ = [
