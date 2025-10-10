@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import mimetypes
 import socket
 
@@ -21,7 +20,6 @@ import click
 from platformio.compat import IS_WINDOWS
 from platformio.home.run import run_server
 from platformio.package.manager.core import get_core_package_dir
-from platformio.project.config import ProjectConfig
 
 
 @click.command("home", short_help="GUI to manage PIO")
