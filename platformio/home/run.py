@@ -37,7 +37,6 @@ from platformio.home.rpc.handlers.project import ProjectRPC
 from platformio.home.rpc.handlers.registry import RegistryRPC
 from platformio.home.rpc.server import WebSocketJSONRPCServerFactory
 from platformio.package.manager.core import get_core_package_dir
-from platformio.project.config import ProjectConfig
 from platformio.proc import force_exit
 
 
