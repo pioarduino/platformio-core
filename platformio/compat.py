@@ -152,9 +152,9 @@ def click_launch(url, wait=False, locate=False) -> int:
     return _click_open_url(url, wait=wait, locate=locate)
 
 
-def _click_open_url(
+def _click_open_url(  # pylint: disable=too-many-branches, too-many-return-statements, consider-using-with, import-outside-toplevel, unspecified-encoding
     url, wait=False, locate=False
-):  # pylint: disable=too-many-branches, too-many-return-statements, consider-using-with
+):
     """
     Issue https://github.com/pallets/click/issues/2868
     Keep in sync with https://github.com/pallets/click/blob/main/src/click/_termui_impl.py
