@@ -29,7 +29,7 @@ def get_core_dependencies():
 def get_pip_dependencies():
     core = [
         "bottle == 0.13.*",
-        "click >=8.0.4, <8.1.8",
+        "click >=8.0.4, <8.4",
         "colorama",
         "marshmallow == 3.*",
         "pyelftools >=0.27, <1",
