@@ -15,6 +15,16 @@ jobs:
       PIO_INSTALL_DEVPLATFORM_NAMES: "aceinna_imu,atmelavr,atmelmegaavr,atmelsam,espressif32,espressif8266,nordicnrf52,raspberrypi,ststm32,teensy"
 
     steps:
+      - name: Free Disk Space
+        uses: endersonmenezes/free-disk-space@v3
+        with:
+          remove_android: true
+          remove_dotnet: true
+          remove_haskell: true
+          # Faster cleanup
+          remove_packages_one_command: true
+          rm_cmd: "rmz"
+
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
@@ -33,16 +43,9 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           # Free space
-          echo "Listing 50 largest packages"
-          dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 50
-          df -h
-          sudo rm -rf /opt/hostedtoolcache
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
           sudo apt clean
-          docker system prune -af
+          # docker rmi $(docker image ls -aq)
           df -h
-
           tox -e testexamples
 
       - name: Run on macOS
