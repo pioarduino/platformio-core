@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import codecs
 import os
 import sys
 
@@ -167,12 +166,12 @@ class ProjectGenerator:
 
     @staticmethod
     def _render_tpl(tpl_path, tpl_vars):
-        with codecs.open(tpl_path, "r", encoding="utf8") as fp:
+        with open(tpl_path, "r", encoding="utf8") as fp:
             return bottle.template(fp.read(), **tpl_vars)
 
     @staticmethod
     def _merge_contents(dst_path, contents):
         if os.path.basename(dst_path) == ".gitignore" and os.path.isfile(dst_path):
             return
-        with codecs.open(dst_path, "w", encoding="utf8") as fp:
+        with open(dst_path, "w", encoding="utf8") as fp:
             fp.write(contents)
