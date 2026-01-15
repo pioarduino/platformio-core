@@ -612,17 +612,38 @@ int main() {}
     assert verbose_errors == errors == 1
 
 
-def test_check_handles_spaces_in_paths(clirunner, validate_cliresult, tmpdir_factory):
-    tmpdir = tmpdir_factory.mktemp("project dir")
-    config = DEFAULT_CONFIG + "\ncheck_tool = cppcheck, clangtidy, pvs-studio"
-    tmpdir.join("platformio.ini").write(config)
-    tmpdir.mkdir("src").join("main.cpp").write(
+@pytest.mark.parametrize("check_tool", ["cppcheck", "clangtidy", "pvs-studio"])
+def test_check_handles_spaces_in_paths(
+    clirunner, validate_cliresult, tmpdir_factory, check_tool
+):
+    package_dir_with_spaces = tmpdir_factory.mktemp("pio pkg dir")
+    project_dir_with_spaces = tmpdir_factory.mktemp("project dir")
+    config = f"""
+[platformio]
+; redirect toolchain and tool packages to a directory with whitespaces
+packages_dir = {package_dir_with_spaces}
+
+[env:test]
+platform = atmelsam
+board = adafruit_feather_m0
+framework = arduino
+check_tool = {check_tool}
+"""
+    project_dir_with_spaces.join("platformio.ini").write(config)
+    project_dir_with_spaces.mkdir("src").join("main.cpp").write(
         PVS_STUDIO_FREE_LICENSE_HEADER + TEST_CODE
     )
 
-    default_result = clirunner.invoke(cmd_check, ["--project-dir", str(tmpdir)])
+    result = clirunner.invoke(
+        cmd_check, ["--project-dir", str(project_dir_with_spaces), "-v"]
+    )
 
-    validate_cliresult(default_result)
+    validate_cliresult(result)
+
+    # Make sure toolchain defines were successfully extracted
+    if check_tool != "pvs-studio":
+        # PVS doesn't write defines to stdout
+        assert "__GNUC__" in result.output
 
 
 #
