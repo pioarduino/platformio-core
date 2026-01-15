@@ -25,6 +25,7 @@ test-driven methodologies, and modern toolchains for unrivaled success.
 * Added support for Python 3.14
 * Fixed a regression issue where custom build flags were not properly reflected in the `compile_commands.json <https://docs.platformio.org/en/latest/integration/compile_commands.html>`__ file, ensuring accurate compilation database generation
 * Fixed an issue where fully-qualified serial port URLs (e.g., ``rfc2217://host:port``) were incorrectly treated as wildcard patterns (`issue #5225 <https://github.com/platformio/platformio-core/issues/5225>`_)
+* Fixed an issue where the toolchain path in static analysis was not handled correctly if it contained spaces (`pull #5351 <https://github.com/platformio/platformio-core/issues/5351>`_)
 
 6.1.18 (2025-03-11)
 ~~~~~~~~~~~~~~~~~~~
