@@ -330,7 +330,9 @@ class BasePackageManager(  # pylint: disable=too-many-public-methods,too-many-in
             return
         shell = False
         if not isinstance(cmd, list):
-            shell = True
+            # issue #5366: workaround when command passed as string without spaces
+            if " " in cmd:
+                shell = True
             cmd = [cmd]
         os.environ["PIO_PYTHON_EXE"] = get_pythonexe_path()
         with fs.cd(pkg.path):
