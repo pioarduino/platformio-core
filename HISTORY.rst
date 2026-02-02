@@ -28,6 +28,7 @@ test-driven methodologies, and modern toolchains for unrivaled success.
 * Fixed an issue where fully-qualified serial port URLs (e.g., ``rfc2217://host:port``) were incorrectly treated as wildcard patterns (`issue #5225 <https://github.com/platformio/platformio-core/issues/5225>`_)
 * Fixed an issue where the toolchain path in static analysis was not handled correctly if it contained spaces (`pull #5351 <https://github.com/platformio/platformio-core/issues/5351>`_)
 * Fixed installation failure when the executable path contains spaces for ``postinstall`` scripts and handling both list and string command formats (`pull #5366 <https://github.com/platformio/platformio-core/pull/5366>`_)
+* Fixed cleanup of the ``.pio/libdeps`` folder so that leftover libraries are properly removed when the `lib_deps <https://docs.platformio.org/en/latest/projectconf/sections/env/options/library/lib_deps.html>`__ option is empty (`issue #5110 <https://github.com/platformio/platformio-core/issues/5110>`_)
 
 6.1.18 (2025-03-11)
 ~~~~~~~~~~~~~~~~~~~

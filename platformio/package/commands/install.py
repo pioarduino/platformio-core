@@ -264,10 +264,12 @@ def _install_project_env_libraries(project_env, options):
 
 def _uninstall_project_unused_libdeps(project_env, options):
     config = ProjectConfig.get_instance()
+    storage_dir = Path(config.get("platformio", "libdeps_dir"), project_env)
     lib_deps = set(config.get(f"env:{project_env}", "lib_deps"))
     if not lib_deps:
+        if storage_dir.exists():
+            fs.rmtree(str(storage_dir))
         return
-    storage_dir = Path(config.get("platformio", "libdeps_dir"), project_env)
     integrity_dat = storage_dir / "integrity.dat"
     if integrity_dat.is_file():
         prev_lib_deps = set(
