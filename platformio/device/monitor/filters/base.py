@@ -56,6 +56,9 @@ class DeviceMonitorFilterBase(miniterm.Transform):
 
 
 def register_filters(platform=None, options=None):
+    # issue #4556: remove default colorize filter
+    miniterm.TRANSFORMATIONS.pop("colorize", None)
+
     # project filters
     load_monitor_filters(
         ProjectConfig.get_instance().get("platformio", "monitor_dir"),
