@@ -18,39 +18,30 @@ from platformio.project.commands.metadata import project_metadata_cmd
 
 
 def test_metadata_dump(clirunner, validate_cliresult, tmpdir):
-    tmpdir.join("platformio.ini").write(
-        """
+    tmpdir.join("platformio.ini").write("""
 [env:native]
 platform = native
-"""
-    )
+""")
 
     component_dir = tmpdir.mkdir("lib").mkdir("component")
-    component_dir.join("library.json").write(
-        """
+    component_dir.join("library.json").write("""
 {
     "name": "component",
     "version": "1.0.0"
 }
-    """
-    )
-    component_dir.mkdir("include").join("component.h").write(
-        """
+    """)
+    component_dir.mkdir("include").join("component.h").write("""
 #define I_AM_COMPONENT
 
 void dummy(void);
-    """
-    )
-    component_dir.mkdir("src").join("component.cpp").write(
-        """
+    """)
+    component_dir.mkdir("src").join("component.cpp").write("""
 #include <component.h>
 
 void dummy(void ) {};
-    """
-    )
+    """)
 
-    tmpdir.mkdir("src").join("main.c").write(
-        """
+    tmpdir.mkdir("src").join("main.c").write("""
 #include <component.h>
 
 #ifndef I_AM_COMPONENT
@@ -59,8 +50,7 @@ void dummy(void ) {};
 
 int main() {
 }
-"""
-    )
+""")
 
     metadata_path = tmpdir.join("metadata.json")
     result = clirunner.invoke(

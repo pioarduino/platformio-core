@@ -438,15 +438,13 @@ def test_items(config):
 
 def test_update_and_save(tmpdir_factory):
     tmpdir = tmpdir_factory.mktemp("project")
-    tmpdir.join("platformio.ini").write(
-        """
+    tmpdir.join("platformio.ini").write("""
 [platformio]
 extra_configs = a.ini, b.ini
 
 [env:myenv]
 board = myboard
-    """
-    )
+    """)
     config = ProjectConfig(tmpdir.join("platformio.ini").strpath)
     assert config.envs() == ["myenv"]
     assert config.as_tuple()[0][1][0][1] == ["a.ini", "b.ini"]
@@ -487,15 +485,13 @@ board = myboard
 
 def test_update_and_clear(tmpdir_factory):
     tmpdir = tmpdir_factory.mktemp("project")
-    tmpdir.join("platformio.ini").write(
-        """
+    tmpdir.join("platformio.ini").write("""
 [platformio]
 extra_configs = a.ini, b.ini
 
 [env:myenv]
 board = myboard
-    """
-    )
+    """)
     config = ProjectConfig(tmpdir.join("platformio.ini").strpath)
     assert config.sections() == ["platformio", "env:myenv"]
     config.update([["mysection", [("opt1", "value1"), ("opt2", "value2")]]], clear=True)
@@ -588,12 +584,10 @@ def test_win_core_root_dir(tmpdir_factory):
 
         # Override in config
         tmpdir = tmpdir_factory.mktemp("project")
-        tmpdir.join("platformio.ini").write(
-            """
+        tmpdir.join("platformio.ini").write("""
 [platformio]
 core_dir = ~/.pio
-        """
-        )
+        """)
         config = ProjectConfig(tmpdir.join("platformio.ini").strpath)
         assert config.get("platformio", "core_dir") != win_core_root_dir
         assert config.get("platformio", "core_dir") == os.path.realpath(
@@ -608,8 +602,7 @@ core_dir = ~/.pio
 
 def test_this(tmp_path: Path):
     project_conf = tmp_path / "platformio.ini"
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [common]
 board = uno
 
@@ -617,8 +610,7 @@ board = uno
 extends = common
 build_flags = -D${this.__env__}
 custom_option = ${this.board}
-    """
-    )
+    """)
     config = ProjectConfig(str(project_conf))
     assert config.get("env:myenv", "custom_option") == "uno"
     assert config.get("env:myenv", "build_flags") == ["-Dmyenv"]
@@ -628,30 +620,25 @@ def test_project_name(tmp_path: Path):
     project_dir = tmp_path / "my-project-name"
     project_dir.mkdir()
     project_conf = project_dir / "platformio.ini"
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [env:myenv]
-    """
-    )
+    """)
     with fs.cd(str(project_dir)):
         config = ProjectConfig(str(project_conf))
         assert config.get("platformio", "name") == "my-project-name"
 
     # custom name
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [platformio]
 name = custom-project-name
-    """
-    )
+    """)
     config = ProjectConfig(str(project_conf))
     assert config.get("platformio", "name") == "custom-project-name"
 
 
 def test_nested_interpolation(tmp_path: Path):
     project_conf = tmp_path / "platformio.ini"
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [platformio]
 build_dir = /tmp/pio-$PROJECT_HASH
 data_dir = $PROJECT_DIR/assets
@@ -669,8 +656,7 @@ test_testing_command =
      16000000L
      ${UPLOAD_PORT and "-p "+UPLOAD_PORT}
      ${platformio.build_dir}/${this.__env__}/firmware.elf
-    """
-    )
+    """)
     config = ProjectConfig(str(project_conf))
     assert config.get("platformio", "data_dir").endswith(
         os.path.join("$PROJECT_DIR", "assets")
@@ -688,8 +674,7 @@ test_testing_command =
 
 def test_extends_order(tmp_path: Path):
     project_conf = tmp_path / "platformio.ini"
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [a]
 board = test
 
@@ -701,19 +686,16 @@ upload_tool = three
 
 [env:na_ti-ve13]
 extends = a, b, c
-    """
-    )
+    """)
     config = ProjectConfig(str(project_conf))
     assert config.get("env:na_ti-ve13", "upload_tool") == "three"
 
 
 def test_invalid_env_names(tmp_path: Path):
     project_conf = tmp_path / "platformio.ini"
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [env:app:1]
-    """
-    )
+    """)
     config = ProjectConfig(str(project_conf))
     with pytest.raises(InvalidEnvNameError, match=r".*Invalid environment name 'app:1"):
         config.validate()
@@ -721,13 +703,11 @@ def test_invalid_env_names(tmp_path: Path):
 
 def test_linting_errors(tmp_path: Path):
     project_conf = tmp_path / "platformio.ini"
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [env:app1]
 lib_use = 1
 broken_line
-    """
-    )
+    """)
     result = ProjectConfig.lint(str(project_conf))
     assert not result["warnings"]
     assert result["errors"] and len(result["errors"]) == 1
@@ -738,16 +718,14 @@ broken_line
 
 def test_linting_warnings(tmp_path: Path):
     project_conf = tmp_path / "platformio.ini"
-    project_conf.write_text(
-        """
+    project_conf.write_text("""
 [platformio]
 build_dir = /tmp/pio-$PROJECT_HASH
 
 [env:app1]
 lib_use = 1
 test_testing_command = /usr/bin/flash-tool -p $UPLOAD_PORT -b $UPLOAD_SPEED
-    """
-    )
+    """)
     result = ProjectConfig.lint(str(project_conf))
     assert not result["errors"]
     assert result["warnings"] and len(result["warnings"]) == 2

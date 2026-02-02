@@ -116,20 +116,16 @@ def test_ci_keep_build_dir_nested_src_dirs(
 
     # Split default Arduino project in two parts
     src_dir1 = tmpdir_factory.mktemp("src_1")
-    src_dir1.join("src1.cpp").write(
-        """
+    src_dir1.join("src1.cpp").write("""
 #include <Arduino.h>
 void setup() {}
-"""
-    )
+""")
 
     src_dir2 = tmpdir_factory.mktemp("src_2")
-    src_dir2.join("src2.cpp").write(
-        """
+    src_dir2.join("src2.cpp").write("""
 #include <Arduino.h>
 void loop() {}
-"""
-    )
+""")
 
     src_dir1 = str(src_dir1)
     src_dir2 = str(src_dir2)

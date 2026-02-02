@@ -98,8 +98,7 @@ def test_filters(tmpdir_factory):
 def test_gitgnore_filters(tmpdir_factory):
     pkg_dir = tmpdir_factory.mktemp("package")
     pkg_dir.join(".git").mkdir().join("file").write("")
-    pkg_dir.join(".gitignore").write(
-        """
+    pkg_dir.join(".gitignore").write("""
 # comment
 
 gi_file
@@ -111,8 +110,7 @@ gi_folder_*
 gi_keep_file
 !gi_keep_file
 LICENSE
-"""
-    )
+""")
     pkg_dir.join("LICENSE").write("")
     pkg_dir.join("gi_keep_file").write("")
     pkg_dir.join("gi_file").write("")
