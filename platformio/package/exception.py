@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from platformio import util
 from platformio.exception import UserSideException
 
 
@@ -52,9 +51,13 @@ class MissingPackageManifestError(ManifestException):
 
 
 class UnknownPackageError(PackageException):
+    MESSAGE = "Could not find the package with '{0}' requirements"
+
+
+class IncompatiblePackageError(UnknownPackageError):
     MESSAGE = (
-        "Could not find the package with '{0}' requirements for your system '%s'"
-        % util.get_systype()
+        "Could not find a version of the package with '{0}' requirements "
+        "compatible with the '{1}' system"
     )
 
 
