@@ -1,6 +1,6 @@
 % from platformio.compat import shlex_join
 %
-clang
+{{ cc_path }}
 
 {{"%c"}} {{ shlex_join(cc_flags) }}
 {{"%cpp"}} {{ shlex_join(cxx_flags) }}
