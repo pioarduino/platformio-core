@@ -264,6 +264,7 @@ def _install_project_env_libraries(project_env, options):
 
 
 def _uninstall_project_unused_libdeps(lm, lib_deps):
+    lib_deps = set(lib_deps)
     storage_dir = Path(lm.package_dir)
     if not lib_deps:
         if storage_dir.exists():
