@@ -95,7 +95,7 @@ def test_list_tests(clirunner, validate_cliresult, tmp_path: Path):
     assert len(json_report["test_suites"]) == 6
 
 
-def test_group_and_custom_runner(clirunner, validate_cliresult, tmp_path: Path):
+def test_group_and_custom_runner(clirunner, tmp_path: Path):
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     (project_dir / "platformio.ini").write_text("""
@@ -167,13 +167,18 @@ void tearDown(void) {
     // clean stuff up here
 }
 
-void dummy_test(void) {
+void dummy_test_passed(void) {
     TEST_ASSERT_EQUAL(1, TEST_ONE);
+}
+
+void dummy_test_failed(void) {
+    TEST_ASSERT_LESS_THAN(10, 15);
 }
 
 int main() {
     UNITY_BEGIN();
-    RUN_TEST(dummy_test);
+    RUN_TEST(dummy_test_passed);
+    RUN_TEST(dummy_test_failed);
     UNITY_END();
 }
     """)
@@ -181,8 +186,8 @@ int main() {
         pio_test_cmd,
         ["-d", str(project_dir), "-e", "native", "--verbose"],
     )
-    validate_cliresult(result)
-    assert "1 Tests 0 Failures 0 Ignored" in result.output
+    assert result.exit_code != 0
+    assert "2 Tests 1 Failures 0 Ignored" in result.output
     assert "Called from my_extra_fun" in result.output
     assert "CustomTestRunner::TearDown called" in result.output
     assert "Disabled test suite" not in result.output
