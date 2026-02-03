@@ -204,7 +204,6 @@ def _install_project_env_custom_tools(project_env, options):
 
 
 def _install_project_env_libraries(project_env, options):
-    _uninstall_project_unused_libdeps(project_env, options)
     already_up_to_date = not options.get("force")
     config = ProjectConfig.get_instance()
 
@@ -242,6 +241,8 @@ def _install_project_env_libraries(project_env, options):
         )
         lib_deps.extend(test_runner.EXTRA_LIB_DEPS or [])
 
+    _uninstall_project_unused_libdeps(env_lm, lib_deps)
+
     for library in lib_deps:
         spec = PackageSpec(library)
         # skip built-in dependencies
@@ -262,10 +263,8 @@ def _install_project_env_libraries(project_env, options):
     return not already_up_to_date
 
 
-def _uninstall_project_unused_libdeps(project_env, options):
-    config = ProjectConfig.get_instance()
-    storage_dir = Path(config.get("platformio", "libdeps_dir"), project_env)
-    lib_deps = set(config.get(f"env:{project_env}", "lib_deps"))
+def _uninstall_project_unused_libdeps(lm, lib_deps):
+    storage_dir = Path(lm.package_dir)
     if not lib_deps:
         if storage_dir.exists():
             fs.rmtree(str(storage_dir))
@@ -277,10 +276,7 @@ def _uninstall_project_unused_libdeps(project_env, options):
         )
         if lib_deps == prev_lib_deps:
             return
-        lm = LibraryPackageManager(str(storage_dir))
-        if options.get("silent"):
-            lm.set_log_level(logging.WARN)
-        else:
+        if lm.log.getEffectiveLevel() < logging.WARN:
             click.secho("Removing unused dependencies...")
         for spec in set(prev_lib_deps) - set(lib_deps):
             try:
