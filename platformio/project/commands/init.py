@@ -314,6 +314,10 @@ def update_board_envs(project_dir, boards, extra_project_options, env_prefix):
         modified = True
 
         envopts = {"platform": board_config["platform"], "board": id_}
+        platform_value = board_config["platform"]
+        if platform_value == "espressif32":
+            platform_value = "https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip"
+        envopts = {"platform": platform_value, "board": id_}
         # find default framework for board
         frameworks = board_config.get("frameworks")
         if frameworks:

@@ -106,7 +106,6 @@ def main(argv=None):
             exit_code = int(exc.code)
     except Exception as exc:  # pylint: disable=broad-except
         if not isinstance(exc, exception.ReturnErrorCode):
-            maintenance.on_platformio_exception(exc)
             error_str = f"{exc.__class__.__name__}: "
             if isinstance(exc, exception.PlatformioException):
                 error_str += str(exc)
@@ -131,7 +130,6 @@ An unexpected error occurred. Further steps:
             click.secho(error_str, fg="red", err=True)
         exit_code = int(str(exc)) if str(exc).isdigit() else 1
 
-    maintenance.on_platformio_exit()
     sys.argv = prev_sys_argv
     return exit_code
 

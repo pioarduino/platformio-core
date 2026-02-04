@@ -62,9 +62,12 @@ async def protected_page(_):
 
 
 def run_server(host, port, no_open, shutdown_timeout, home_url):
+    # Ensure contrib-piohome is installed before starting the server
     contrib_dir = get_core_package_dir("contrib-piohome")
     if not os.path.isdir(contrib_dir):
-        raise PlatformioException("Invalid path to PIO Home Contrib")
+        raise PlatformioException(
+            "Invalid path to PIO Home Contrib: %s" % contrib_dir
+        )
 
     ws_rpc_factory = WebSocketJSONRPCServerFactory(shutdown_timeout)
     ws_rpc_factory.add_object_handler(AccountRPC(), namespace="account")
