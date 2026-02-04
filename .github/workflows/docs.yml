@@ -7,11 +7,11 @@ jobs:
     name: Build Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: "recursive"
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Install dependencies
@@ -78,7 +78,7 @@ jobs:
           fi
       - name: Checkout latest Docs
         continue-on-error: true
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ env.DOCS_REPO }}
           path: ${{ env.DOCS_DIR }}
