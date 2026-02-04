@@ -32,8 +32,7 @@ def test_generic_build(clirunner, validate_cliresult, tmpdir):
         ),
     ]
 
-    tmpdir.join("platformio.ini").write(
-        """
+    tmpdir.join("platformio.ini").write("""
 [env:native]
 platform = native
 extra_scripts =
@@ -44,36 +43,27 @@ build_src_flags = -DI_AM_ONLY_SRC_FLAG
 build_flags =
     ; -DCOMMENTED_MACRO
     %s ; inline comment
-    """
-        % " ".join([f[0] for f in build_flags])
-    )
+    """ % " ".join([f[0] for f in build_flags]))
 
-    tmpdir.join("pre_script.py").write(
-        """
+    tmpdir.join("pre_script.py").write("""
 Import("env")
 
 def post_prog_action(source, target, env):
     print("post_prog_action is called")
 
 env.AddPostAction("$PROGPATH", post_prog_action)
-    """
-    )
-    tmpdir.join("post_script.py").write(
-        """
+    """)
+    tmpdir.join("post_script.py").write("""
 Import("projenv")
 
 projenv.Append(CPPDEFINES="POST_SCRIPT_MACRO")
-    """
-    )
+    """)
 
-    tmpdir.mkdir("extra_inc").join("foo.h").write(
-        """
+    tmpdir.mkdir("extra_inc").join("foo.h").write("""
 #define FOO
-    """
-    )
+    """)
 
-    tmpdir.mkdir("src").join("main.cpp").write(
-        """
+    tmpdir.mkdir("src").join("main.cpp").write("""
 #include "foo.h"
 
 #ifndef FOO
@@ -116,17 +106,13 @@ projenv.Append(CPPDEFINES="POST_SCRIPT_MACRO")
 
 int main() {
 }
-"""
-    )
+""")
 
-    tmpdir.mkdir("include").join("cpppath-include.h").write(
-        """
+    tmpdir.mkdir("include").join("cpppath-include.h").write("""
 #define I_AM_FORCED_CPPPATH_INCLUDE
-"""
-    )
+""")
     component_dir = tmpdir.mkdir("lib").mkdir("component")
-    component_dir.join("component.h").write(
-        """
+    component_dir.join("component.h").write("""
 #define I_AM_COMPONENT
 
 #ifndef I_AM_ONLY_SRC_FLAG
@@ -134,22 +120,17 @@ int main() {
 #endif
 
 void dummy(void);
-    """
-    )
-    component_dir.join("component.cpp").write(
-        """
+    """)
+    component_dir.join("component.cpp").write("""
 #ifdef I_AM_ONLY_SRC_FLAG
 #error "I_AM_ONLY_SRC_FLAG"
 #endif
 
 void dummy(void ) {};
-    """
-    )
-    component_dir.join("component-forced-include.h").write(
-        """
+    """)
+    component_dir.join("component-forced-include.h").write("""
 #define I_AM_FORCED_COMPONENT_INCLUDE
-    """
-    )
+    """)
 
     result = clirunner.invoke(cmd_run, ["--project-dir", str(tmpdir), "--verbose"])
     validate_cliresult(result)
@@ -160,8 +141,7 @@ void dummy(void ) {};
 
 
 def test_build_unflags(clirunner, validate_cliresult, tmpdir):
-    tmpdir.join("platformio.ini").write(
-        """
+    tmpdir.join("platformio.ini").write("""
 [env:native]
 platform = native
 build_unflags =
@@ -175,11 +155,9 @@ build_unflags =
 build_flags =
     -DTMP_MACRO_3=10
 extra_scripts = pre:extra.py
-"""
-    )
+""")
 
-    tmpdir.join("extra.py").write(
-        """
+    tmpdir.join("extra.py").write("""
 Import("env")
 env.Append(CPPPATH="%s")
 env.Append(CPPDEFINES="TMP_MACRO_1")
@@ -188,12 +166,9 @@ env.Append(CPPDEFINES=[("TMP_MACRO_3", 13)])
 env.Append(CPPDEFINES=[("TMP_MACRO_4", 4)])
 env.Append(CCFLAGS=["-Os"])
 env.Append(LIBS=["unknownLib"])
-    """
-        % str(tmpdir)
-    )
+    """ % str(tmpdir))
 
-    tmpdir.mkdir("src").join("main.c").write(
-        """
+    tmpdir.mkdir("src").join("main.c").write("""
 #ifndef TMP_MACRO_1
 #error "TMP_MACRO_1 should be defined"
 #endif
@@ -212,8 +187,7 @@ env.Append(LIBS=["unknownLib"])
 
 int main() {
 }
-"""
-    )
+""")
 
     result = clirunner.invoke(cmd_run, ["--project-dir", str(tmpdir), "--verbose"])
     validate_cliresult(result)
@@ -224,20 +198,16 @@ int main() {
 
 
 def test_debug_default_build_flags(clirunner, validate_cliresult, tmpdir):
-    tmpdir.join("platformio.ini").write(
-        """
+    tmpdir.join("platformio.ini").write("""
 [env:native]
 platform = native
 build_type = debug
-"""
-    )
+""")
 
-    tmpdir.mkdir("src").join("main.c").write(
-        """
+    tmpdir.mkdir("src").join("main.c").write("""
 int main() {
 }
-"""
-    )
+""")
 
     result = clirunner.invoke(cmd_run, ["--project-dir", str(tmpdir), "--verbose"])
     validate_cliresult(result)
@@ -256,22 +226,17 @@ int main() {
 def test_debug_custom_build_flags(clirunner, validate_cliresult, tmpdir):
     custom_debug_build_flags = ("-O3", "-g3", "-ggdb3")
 
-    tmpdir.join("platformio.ini").write(
-        """
+    tmpdir.join("platformio.ini").write("""
 [env:native]
 platform = native
 build_type = debug
 debug_build_flags = %s
-    """
-        % " ".join(custom_debug_build_flags)
-    )
+    """ % " ".join(custom_debug_build_flags))
 
-    tmpdir.mkdir("src").join("main.c").write(
-        """
+    tmpdir.mkdir("src").join("main.c").write("""
 int main() {
 }
-"""
-    )
+""")
 
     result = clirunner.invoke(cmd_run, ["--project-dir", str(tmpdir), "--verbose"])
     validate_cliresult(result)
@@ -290,25 +255,20 @@ int main() {
 def test_symlinked_libs(clirunner, validate_cliresult, tmp_path: Path):
     external_pkg_dir = tmp_path / "External"
     external_pkg_dir.mkdir()
-    (external_pkg_dir / "External.h").write_text(
-        """
+    (external_pkg_dir / "External.h").write_text("""
 #define EXTERNAL 1
-"""
-    )
-    (external_pkg_dir / "library.json").write_text(
-        """
+""")
+    (external_pkg_dir / "library.json").write_text("""
 {
     "name": "External",
     "version": "1.0.0"
 }
-"""
-    )
+""")
 
     project_dir = tmp_path / "project"
     src_dir = project_dir / "src"
     src_dir.mkdir(parents=True)
-    (src_dir / "main.c").write_text(
-        """
+    (src_dir / "main.c").write_text("""
 #include <External.h>
 #
 #if !defined(EXTERNAL)
@@ -317,15 +277,12 @@ def test_symlinked_libs(clirunner, validate_cliresult, tmp_path: Path):
 
 int main() {
 }
-"""
-    )
-    (project_dir / "platformio.ini").write_text(
-        """
+""")
+    (project_dir / "platformio.ini").write_text("""
 [env:native]
 platform = native
 lib_deps = symlink://../External
-    """
-    )
+    """)
     result = clirunner.invoke(cmd_run, ["--project-dir", str(project_dir)])
     validate_cliresult(result)
 
@@ -334,8 +291,7 @@ def test_stringification(clirunner, validate_cliresult, tmp_path: Path):
     project_dir = tmp_path / "project"
     src_dir = project_dir / "src"
     src_dir.mkdir(parents=True)
-    (src_dir / "main.c").write_text(
-        """
+    (src_dir / "main.c").write_text("""
 #include <stdio.h>
 int main(void) {
     printf("MACRO_1=<%s>\\n", MACRO_1);
@@ -344,28 +300,23 @@ int main(void) {
     printf("MACRO_4=<%s>\\n", MACRO_4);
     return(0);
 }
-"""
-    )
-    (project_dir / "platformio.ini").write_text(
-        """
+""")
+    (project_dir / "platformio.ini").write_text("""
 [env:native]
 platform = native
 extra_scripts = script.py
 build_flags =
     '-DMACRO_1="Hello World!"'
     '-DMACRO_2="Text is \\\\"Quoted\\\\""'
-    """
-    )
-    (project_dir / "script.py").write_text(
-        """
+    """)
+    (project_dir / "script.py").write_text("""
 Import("projenv")
 
 projenv.Append(CPPDEFINES=[
     ("MACRO_3", projenv.StringifyMacro('Hello "World"! Isn\\'t true?')),
     ("MACRO_4", projenv.StringifyMacro("Special chars: ',(,),[,],:"))
 ])
-    """
-    )
+    """)
     result = clirunner.invoke(
         cmd_run, ["--project-dir", str(project_dir), "-t", "exec"]
     )
@@ -383,11 +334,9 @@ def test_ldf(clirunner, validate_cliresult, tmp_path: Path):
     lib_dir = project_dir / "lib"
     a_lib_dir = lib_dir / "a"
     a_lib_dir.mkdir(parents=True)
-    (a_lib_dir / "a.h").write_text(
-        """
+    (a_lib_dir / "a.h").write_text("""
 #include <some_from_b.h>
-"""
-    )
+""")
     # b
     b_lib_dir = lib_dir / "b"
     b_lib_dir.mkdir(parents=True)
@@ -395,25 +344,19 @@ def test_ldf(clirunner, validate_cliresult, tmp_path: Path):
     # c
     c_lib_dir = lib_dir / "c"
     c_lib_dir.mkdir(parents=True)
-    (c_lib_dir / "parse_c_by_name.h").write_text(
-        """
+    (c_lib_dir / "parse_c_by_name.h").write_text("""
 void some_func();
-    """
-    )
-    (c_lib_dir / "parse_c_by_name.c").write_text(
-        """
+    """)
+    (c_lib_dir / "parse_c_by_name.c").write_text("""
 #include <d.h>
 #include <parse_c_by_name.h>
 
 void some_func() {
 }
-    """
-    )
-    (c_lib_dir / "some.c").write_text(
-        """
+    """)
+    (c_lib_dir / "some.c").write_text("""
 #include <d.h>
-    """
-    )
+    """)
     # d
     d_lib_dir = lib_dir / "d"
     d_lib_dir.mkdir(parents=True)
@@ -422,25 +365,19 @@ void some_func() {
     # project
     src_dir = project_dir / "src"
     src_dir.mkdir(parents=True)
-    (src_dir / "main.h").write_text(
-        """
+    (src_dir / "main.h").write_text("""
 #include <a.h>
 #include <parse_c_by_name.h>
-"""
-    )
-    (src_dir / "main.c").write_text(
-        """
+""")
+    (src_dir / "main.c").write_text("""
 #include <main.h>
 
 int main() {
 }
-"""
-    )
-    (project_dir / "platformio.ini").write_text(
-        """
+""")
+    (project_dir / "platformio.ini").write_text("""
 [env:native]
 platform = native
-    """
-    )
+    """)
     result = clirunner.invoke(cmd_run, ["--project-dir", str(project_dir)])
     validate_cliresult(result)

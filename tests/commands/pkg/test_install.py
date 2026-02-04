@@ -234,8 +234,7 @@ def test_private_lib_deps(
     project_dir = tmp_path / "project"
     private_lib_dir = project_dir / "lib" / "private"
     private_lib_dir.mkdir(parents=True)
-    (private_lib_dir / "library.json").write_text(
-        """
+    (private_lib_dir / "library.json").write_text("""
 {
     "name": "My Private Lib",
     "version": "1.0.0",
@@ -244,14 +243,11 @@ def test_private_lib_deps(
         "milesburton/DallasTemperature": "^4.0.4"
     }
 }
-"""
-    )
-    (project_dir / "platformio.ini").write_text(
-        """
+""")
+    (project_dir / "platformio.ini").write_text("""
 [env:private]
 platform = native
-"""
-    )
+""")
     with fs.cd(str(project_dir)):
         config = ProjectConfig()
 
@@ -357,15 +353,13 @@ def test_unknown_project_dependencies(
 ):
     project_dir = tmp_path / "project"
     project_dir.mkdir()
-    (project_dir / "platformio.ini").write_text(
-        """
+    (project_dir / "platformio.ini").write_text("""
 [env:unknown_platform]
 platform = unknown_platform
 
 [env:unknown_lib_deps]
 lib_deps = SPI, platformio/unknown_library
-"""
-    )
+""")
     with fs.cd(str(project_dir)):
         result = clirunner.invoke(
             package_install_cmd,

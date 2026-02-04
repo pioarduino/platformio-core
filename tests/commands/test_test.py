@@ -95,34 +95,29 @@ def test_list_tests(clirunner, validate_cliresult, tmp_path: Path):
     assert len(json_report["test_suites"]) == 6
 
 
-def test_group_and_custom_runner(clirunner, validate_cliresult, tmp_path: Path):
+def test_group_and_custom_runner(clirunner, tmp_path: Path):
     project_dir = tmp_path / "project"
     project_dir.mkdir()
-    (project_dir / "platformio.ini").write_text(
-        """
+    (project_dir / "platformio.ini").write_text("""
 [env:native]
 platform = native
 test_framework = custom
-"""
-    )
+""")
     test_dir = project_dir / "test"
 
     # non-test folder, does not start with "test_"
     disabled_dir = test_dir / "disabled"
     disabled_dir.mkdir(parents=True)
-    (disabled_dir / "main.c").write_text(
-        """
+    (disabled_dir / "main.c").write_text("""
 #include <stdio.h>
 
 int main() {
     printf("Disabled test suite\\n")
 }
-    """
-    )
+    """)
 
     # root
-    (test_dir / "my_extra.h").write_text(
-        """
+    (test_dir / "my_extra.h").write_text("""
 #ifndef MY_EXTRA_H
 #define MY_EXTRA_H
 
@@ -130,23 +125,19 @@ int main() {
 
 void my_extra_fun(void);
 #endif
-"""
-    )
-    (test_dir / "my_extra.c").write_text(
-        """
+""")
+    (test_dir / "my_extra.c").write_text("""
 #include "my_extra.h"
 
 void my_extra_fun(void) {
     printf("Called from my_extra_fun\\n");
 }
-"""
-    )
+""")
 
     # test group
     test_group = test_dir / "group"
     test_group.mkdir(parents=True)
-    (test_group / "test_custom_runner.py").write_text(
-        """
+    (test_group / "test_custom_runner.py").write_text("""
 import click
 
 from platformio.test.runners.unity import UnityTestRunner
@@ -154,20 +145,16 @@ from platformio.test.runners.unity import UnityTestRunner
 class CustomTestRunner(UnityTestRunner):
     def teardown(self):
         click.echo("CustomTestRunner::TearDown called")
-"""
-    )
+""")
 
     # test suite
     test_suite_dir = test_group / "test_nested"
     test_include_dir = test_suite_dir / "include"
     test_include_dir.mkdir(parents=True)
-    (test_include_dir / "my_nested.h").write_text(
-        """
+    (test_include_dir / "my_nested.h").write_text("""
 #define TEST_ONE 1
-"""
-    )
-    (test_suite_dir / "main.c").write_text(
-        """
+""")
+    (test_suite_dir / "main.c").write_text("""
 #include <unity.h>
 #include <my_extra.h>
 #include <include/my_nested.h>
@@ -180,23 +167,27 @@ void tearDown(void) {
     // clean stuff up here
 }
 
-void dummy_test(void) {
+void dummy_test_passed(void) {
     TEST_ASSERT_EQUAL(1, TEST_ONE);
+}
+
+void dummy_test_failed(void) {
+    TEST_ASSERT_LESS_THAN(10, 15);
 }
 
 int main() {
     UNITY_BEGIN();
-    RUN_TEST(dummy_test);
+    RUN_TEST(dummy_test_passed);
+    RUN_TEST(dummy_test_failed);
     UNITY_END();
 }
-    """
-    )
+    """)
     result = clirunner.invoke(
         pio_test_cmd,
         ["-d", str(project_dir), "-e", "native", "--verbose"],
     )
-    validate_cliresult(result)
-    assert "1 Tests 0 Failures 0 Ignored" in result.output
+    assert result.exit_code != 0
+    assert "2 Tests 1 Failures 0 Ignored" in result.output
     assert "Called from my_extra_fun" in result.output
     assert "CustomTestRunner::TearDown called" in result.output
     assert "Disabled test suite" not in result.output
@@ -204,15 +195,12 @@ int main() {
 
 def test_crashed_program(clirunner, tmpdir):
     project_dir = tmpdir.mkdir("project")
-    project_dir.join("platformio.ini").write(
-        """
+    project_dir.join("platformio.ini").write("""
 [env:native]
 platform = native
-"""
-    )
+""")
     test_dir = project_dir.mkdir("test")
-    test_dir.join("test_main.c").write(
-        """
+    test_dir.join("test_main.c").write("""
 #include <stdio.h>
 #include <unity.h>
 
@@ -234,8 +222,7 @@ int main(int argc, char *argv[]) {
     UNITY_END();
     return 0;
 }
-"""
-    )
+""")
     result = clirunner.invoke(
         pio_test_cmd,
         ["-d", str(project_dir), "-e", "native"],
@@ -311,21 +298,16 @@ int main(int argc, char *argv[]) {
 
 def test_unity_setup_teardown(clirunner, validate_cliresult, tmpdir):
     project_dir = tmpdir.mkdir("project")
-    project_dir.join("platformio.ini").write(
-        """
+    project_dir.join("platformio.ini").write("""
 [env:native]
 platform = native
-"""
-    )
+""")
     test_dir = project_dir.mkdir("test")
-    test_dir.join("test_main.h").write(
-        """
+    test_dir.join("test_main.h").write("""
 #include <stdio.h>
 #include <unity.h>
-    """
-    )
-    test_dir.join("test_main.c").write(
-        """
+    """)
+    test_dir.join("test_main.c").write("""
 #include "test_main.h"
 
 void setUp(){
@@ -344,8 +326,7 @@ int main() {
     RUN_TEST(dummy_test);
     UNITY_END();
 }
-"""
-    )
+""")
     result = clirunner.invoke(
         pio_test_cmd,
         ["-d", str(project_dir), "-e", "native"],
@@ -357,26 +338,21 @@ int main() {
 def test_unity_custom_config(clirunner, validate_cliresult, tmp_path: Path):
     project_dir = tmp_path / "project"
     project_dir.mkdir()
-    (project_dir / "platformio.ini").write_text(
-        """
+    (project_dir / "platformio.ini").write_text("""
 [env:native]
 platform = native
-"""
-    )
+""")
     test_dir = project_dir / "test" / "native" / "test_component"
     test_dir.mkdir(parents=True)
-    (test_dir.parent / "unity_config.h").write_text(
-        """
+    (test_dir.parent / "unity_config.h").write_text("""
 #include <stdio.h>
 
 #define CUSTOM_UNITY_CONFIG
 
 #define UNITY_OUTPUT_CHAR(c)    putchar(c)
 #define UNITY_OUTPUT_FLUSH()    fflush(stdout)
-"""
-    )
-    (test_dir / "test_main.c").write_text(
-        """
+""")
+    (test_dir / "test_main.c").write_text("""
 #include <stdio.h>
 #include <unity.h>
 
@@ -397,8 +373,7 @@ int main() {
     RUN_TEST(dummy_test);
     UNITY_END();
 }
-"""
-    )
+""")
     result = clirunner.invoke(
         pio_test_cmd,
         ["-d", str(project_dir), "-e", "native", "--verbose"],
@@ -409,19 +384,16 @@ int main() {
 
 def test_legacy_unity_custom_transport(clirunner, validate_cliresult, tmpdir):
     project_dir = tmpdir.mkdir("project")
-    project_dir.join("platformio.ini").write(
-        """
+    project_dir.join("platformio.ini").write("""
 [env:embedded]
 platform = ststm32
 framework = stm32cube
 board = nucleo_f401re
 test_transport = custom
-"""
-    )
+""")
 
     test_dir = project_dir.mkdir("test")
-    test_dir.join("test_main.c").write(
-        """
+    test_dir.join("test_main.c").write("""
 #include <unity.h>
 
 void setUp(void) {
@@ -441,10 +413,8 @@ int main() {
     RUN_TEST(dummy_test);
     UNITY_END();
 }
-"""
-    )
-    test_dir.join("unittest_transport.h").write(
-        """
+""")
+    test_dir.join("unittest_transport.h").write("""
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -457,8 +427,7 @@ void unittest_uart_end(){}
 #ifdef __cplusplus
 }
 #endif
-"""
-    )
+""")
     result = clirunner.invoke(
         pio_test_cmd,
         [
@@ -478,17 +447,14 @@ void unittest_uart_end(){}
 def test_doctest_framework(clirunner, tmp_path: Path):
     project_dir = tmp_path / "project"
     project_dir.mkdir()
-    (project_dir / "platformio.ini").write_text(
-        """
+    (project_dir / "platformio.ini").write_text("""
 [env:native]
 platform = native
 test_framework = doctest
-"""
-    )
+""")
     test_dir = project_dir / "test" / "test_dummy"
     test_dir.mkdir(parents=True)
-    (test_dir / "test_main.cpp").write_text(
-        """
+    (test_dir / "test_main.cpp").write_text("""
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest.h>
 
@@ -554,8 +520,7 @@ int main(int argc, char **argv)
 	context.applyCommandLine(argc, argv);
 	return context.run();
 }
-"""
-    )
+""")
     junit_output_path = tmp_path / "junit.xml"
     result = clirunner.invoke(
         pio_test_cmd,

@@ -101,7 +101,7 @@ class DoctestTestCaseParser:
 
 
 class DoctestTestRunner(TestRunnerBase):
-    EXTRA_LIB_DEPS = ["doctest/doctest@^2.4.11"]
+    EXTRA_LIB_DEPS = ["doctest/doctest@^2.4.12"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

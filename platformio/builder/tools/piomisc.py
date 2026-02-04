@@ -145,7 +145,7 @@ def generate(env):
     env.AddMethod(GetActualLDScript)
     env.AddMethod(ConfigureDebugTarget)
     env.AddMethod(GetExtraScripts)
-    # bakward-compatibility with Zephyr build script
+    # backward-compatibility with Zephyr build script
     env.AddMethod(ConfigureDebugTarget, "ConfigureDebugFlags")
 
 

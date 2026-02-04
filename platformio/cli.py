@@ -18,7 +18,7 @@ from pathlib import Path
 import click
 
 
-class PlatformioCLI(click.MultiCommand):
+class PlatformioCLI(click.Group):
     leftover_args = []
 
     def __init__(self, *args, **kwargs):
@@ -84,7 +84,7 @@ class PlatformioCLI(click.MultiCommand):
             PlatformioCLI.leftover_args = ctx.protected_args + ctx.args
         return super().invoke(ctx)
 
-    def list_commands(self, ctx):
+    def list_commands(self, ctx):  # pylint: disable=unused-argument
         return sorted(list(self._find_pio_commands()))
 
     def get_command(self, ctx, cmd_name):

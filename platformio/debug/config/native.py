@@ -28,6 +28,4 @@ define pio_restart_target
 end
 
 $INIT_BREAK
-""" + (
-        "set startup-with-shell off" if not IS_WINDOWS else ""
-    )
+""" + ("set startup-with-shell off" if not IS_WINDOWS else "")

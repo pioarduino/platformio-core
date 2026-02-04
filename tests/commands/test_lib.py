@@ -30,8 +30,7 @@ from platformio.registry.client import RegistryClient
 def test_saving_deps(clirunner, validate_cliresult, isolated_pio_core, tmpdir_factory):
     regclient = RegistryClient()
     project_dir = tmpdir_factory.mktemp("project")
-    project_dir.join("platformio.ini").write(
-        """
+    project_dir.join("platformio.ini").write("""
 [env]
 lib_deps = ArduinoJson
 
@@ -43,8 +42,7 @@ framework = foo
 lib_deps =
     CustomLib
     ArduinoJson @ 6.18.5
-"""
-    )
+""")
     result = clirunner.invoke(
         cmd_lib,
         ["-d", str(project_dir), "install", "64", "knolleary/PubSubClient@~2.7"],

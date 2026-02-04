@@ -99,7 +99,7 @@ class DeviceMonitorClient(  # pylint: disable=too-many-instance-attributes
             if not success:
                 click.secho(value, fg="red", err=True)
                 continue
-            (agent_name, ports) = value
+            agent_name, ports = value
             for item in ports:
                 if "VID:PID" in item["hwid"]:
                     hwid_devindexes.append(len(devices))

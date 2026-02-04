@@ -127,29 +127,22 @@ def test_check_tool_complex_defines_handled(
 ):
     project_dir = tmpdir_factory.mktemp("project_dir")
 
-    project_dir.join("platformio.ini").write(
-        DEFAULT_CONFIG
-        + R"""
+    project_dir.join("platformio.ini").write(DEFAULT_CONFIG + R"""
 check_tool = cppcheck, clangtidy, pvs-studio
 build_flags =
     -DEXTERNAL_INCLUDE_FILE=\"test.h\"
     "-DDEFINE_WITH_SPACE="Hello World!""
-"""
-    )
+""")
 
     src_dir = project_dir.mkdir("src")
-    src_dir.join("test.h").write(
-        """
+    src_dir.join("test.h").write("""
 #ifndef TEST_H
 #define TEST_H
 #define ARBITRARY_CONST_VALUE 10
 #endif
-"""
-    )
+""")
 
-    src_dir.join("main.c").write(
-        PVS_STUDIO_FREE_LICENSE_HEADER
-        + """
+    src_dir.join("main.c").write(PVS_STUDIO_FREE_LICENSE_HEADER + """
 #if !defined(EXTERNAL_INCLUDE_FILE)
 #error "EXTERNAL_INCLUDE_FILE is not declared!"
 #else
@@ -165,8 +158,7 @@ int main()
     }
     return 0;
 }
-"""
-    )
+""")
 
     default_result = clirunner.invoke(cmd_check, ["--project-dir", str(project_dir)])
     validate_cliresult(default_result)
@@ -183,12 +175,9 @@ def test_check_language_standard_definition_passed(clirunner, tmpdir):
 
 
 def test_check_language_standard_option_is_converted(clirunner, tmpdir):
-    config = (
-        DEFAULT_CONFIG
-        + """
+    config = DEFAULT_CONFIG + """
 build_flags = -std=gnu++1y
     """
-    )
     tmpdir.join("platformio.ini").write(config)
     tmpdir.mkdir("src").join("main.cpp").write(TEST_CODE)
     result = clirunner.invoke(cmd_check, ["--project-dir", str(tmpdir), "-v"])
@@ -197,13 +186,10 @@ build_flags = -std=gnu++1y
 
 
 def test_check_language_standard_is_prioritized_over_build_flags(clirunner, tmpdir):
-    config = (
-        DEFAULT_CONFIG
-        + """
+    config = DEFAULT_CONFIG + """
 check_flags = --std=c++03
 build_flags = -std=c++17
     """
-    )
     tmpdir.join("platformio.ini").write(config)
     tmpdir.mkdir("src").join("main.cpp").write(TEST_CODE)
     result = clirunner.invoke(cmd_check, ["--project-dir", str(tmpdir), "-v"])
@@ -288,8 +274,7 @@ def test_check_bad_flag_passed(clirunner, check_dir):
 
 def test_check_success_if_no_errors(clirunner, validate_cliresult, tmpdir):
     tmpdir.join("platformio.ini").write(DEFAULT_CONFIG)
-    tmpdir.mkdir("src").join("main.c").write(
-        """
+    tmpdir.mkdir("src").join("main.c").write("""
 #include <stdlib.h>
 
 void unused_function(){
@@ -300,8 +285,7 @@ void unused_function(){
 
 int main() {
 }
-"""
-    )
+""")
 
     result = clirunner.invoke(cmd_check, ["--project-dir", str(tmpdir)])
     validate_cliresult(result)
@@ -349,17 +333,14 @@ def test_check_cppcheck_misra_addon(clirunner, validate_cliresult, tmpdir_factor
     check_dir = tmpdir_factory.mktemp("project")
     check_dir.join("platformio.ini").write(DEFAULT_CONFIG)
     check_dir.mkdir("src").join("main.c").write(TEST_CODE)
-    check_dir.join("misra.json").write(
-        """
+    check_dir.join("misra.json").write("""
 {
     "script": "addons/misra.py",
     "args": ["--rule-texts=rules.txt"]
 }
-"""
-    )
+""")
 
-    check_dir.join("rules.txt").write(
-        """
+    check_dir.join("rules.txt").write("""
 Appendix A Summary of guidelines
 Rule 3.1 Required
 R3.1 text.
@@ -381,8 +362,7 @@ Rule 21.3 Required
 R21.3 Found MISRA defect
 Rule 21.4
 R21.4 text.
-"""
-    )
+""")
 
     result = clirunner.invoke(
         cmd_check, ["--project-dir", str(check_dir), "--flags=--addon=misra.json"]
@@ -413,8 +393,7 @@ def test_check_fails_on_defects_only_on_specified_level(
 ):
     config = DEFAULT_CONFIG + "\ncheck_tool = cppcheck, clangtidy"
     tmpdir.join("platformio.ini").write(config)
-    tmpdir.mkdir("src").join("main.c").write(
-        """
+    tmpdir.mkdir("src").join("main.c").write("""
 #include <stdlib.h>
 
 void unused_function(){
@@ -425,8 +404,7 @@ void unused_function(){
 
 int main() {
 }
-"""
-    )
+""")
 
     high_result = clirunner.invoke(
         cmd_check, ["--project-dir", str(tmpdir), "--fail-on-defect=high"]
@@ -485,22 +463,17 @@ def test_check_pvs_studio_fails_without_license(clirunner, tmpdir):
     reason="For some reason the error message is different on Windows",
 )
 def test_check_pvs_studio_fails_broken_license(clirunner, tmpdir):
-    config = (
-        DEFAULT_CONFIG
-        + """
+    config = DEFAULT_CONFIG + """
 check_tool = pvs-studio
 check_flags = --lic-file=./pvs-studio.lic
 """
-    )
 
     tmpdir.join("platformio.ini").write(config)
     tmpdir.mkdir("src").join("main.c").write(TEST_CODE)
-    tmpdir.join("pvs-studio.lic").write(
-        """
+    tmpdir.join("pvs-studio.lic").write("""
 TEST
 TEST-TEST-TEST-TEST
-"""
-    )
+""")
 
     default_result = clirunner.invoke(cmd_check, ["--project-dir", str(tmpdir)])
     verbose_result = clirunner.invoke(cmd_check, ["--project-dir", str(tmpdir), "-v"])
@@ -524,9 +497,7 @@ board = nucleo_f401re
 framework = {framework}
 check_tool = {check_tool}
 """
-    tmpdir.mkdir("src").join("main.c").write(
-        PVS_STUDIO_FREE_LICENSE_HEADER
-        + """
+    tmpdir.mkdir("src").join("main.c").write(PVS_STUDIO_FREE_LICENSE_HEADER + """
 #include <stdlib.h>
 
 void unused_function(int val){
@@ -537,8 +508,7 @@ void unused_function(int val){
 
 int main() {
 }
-"""
-    )
+""")
 
     if framework == "zephyr":
         zephyr_dir = tmpdir.mkdir("zephyr")
@@ -586,22 +556,18 @@ def test_check_multiline_error(clirunner, tmpdir_factory):
     project_dir = tmpdir_factory.mktemp("project")
     project_dir.join("platformio.ini").write(DEFAULT_CONFIG)
 
-    project_dir.mkdir("include").join("main.h").write(
-        """
+    project_dir.mkdir("include").join("main.h").write("""
 #error This is a multiline error message \\
 that should be correctly reported \\
 in both default and verbose modes.
-"""
-    )
+""")
 
-    project_dir.mkdir("src").join("main.c").write(
-        """
+    project_dir.mkdir("src").join("main.c").write("""
 #include <stdlib.h>
 #include "main.h"
 
 int main() {}
-"""
-    )
+""")
 
     result = clirunner.invoke(cmd_check, ["--project-dir", str(project_dir)])
     errors, _, _ = count_defects(result.output)
@@ -612,17 +578,38 @@ int main() {}
     assert verbose_errors == errors == 1
 
 
-def test_check_handles_spaces_in_paths(clirunner, validate_cliresult, tmpdir_factory):
-    tmpdir = tmpdir_factory.mktemp("project dir")
-    config = DEFAULT_CONFIG + "\ncheck_tool = cppcheck, clangtidy, pvs-studio"
-    tmpdir.join("platformio.ini").write(config)
-    tmpdir.mkdir("src").join("main.cpp").write(
+@pytest.mark.parametrize("check_tool", ["cppcheck", "clangtidy", "pvs-studio"])
+def test_check_handles_spaces_in_paths(
+    clirunner, validate_cliresult, tmpdir_factory, check_tool
+):
+    package_dir_with_spaces = tmpdir_factory.mktemp("pio pkg dir")
+    project_dir_with_spaces = tmpdir_factory.mktemp("project dir")
+    config = f"""
+[platformio]
+; redirect toolchain and tool packages to a directory with whitespaces
+packages_dir = {package_dir_with_spaces}
+
+[env:test]
+platform = atmelsam
+board = adafruit_feather_m0
+framework = arduino
+check_tool = {check_tool}
+"""
+    project_dir_with_spaces.join("platformio.ini").write(config)
+    project_dir_with_spaces.mkdir("src").join("main.cpp").write(
         PVS_STUDIO_FREE_LICENSE_HEADER + TEST_CODE
     )
 
-    default_result = clirunner.invoke(cmd_check, ["--project-dir", str(tmpdir)])
+    result = clirunner.invoke(
+        cmd_check, ["--project-dir", str(project_dir_with_spaces), "-v"]
+    )
 
-    validate_cliresult(default_result)
+    validate_cliresult(result)
+
+    # Make sure toolchain defines were successfully extracted
+    if check_tool != "pvs-studio":
+        # PVS doesn't write defines to stdout
+        assert "__GNUC__" in result.output
 
 
 #
@@ -672,14 +659,11 @@ def test_check_src_filter(
 def test_check_src_filter_from_config(clirunner, validate_cliresult, tmpdir_factory):
     tmpdir = tmpdir_factory.mktemp("project")
 
-    config = (
-        DEFAULT_CONFIG
-        + """
+    config = DEFAULT_CONFIG + """
 check_src_filters =
     +<src/spi/*.c*>
     +<tests/test.cpp>
     """
-    )
     tmpdir.join("platformio.ini").write(config)
 
     src_dir = tmpdir.mkdir("src")
@@ -745,14 +729,11 @@ def test_check_src_filter_from_config_legacy(
 ):
     tmpdir = tmpdir_factory.mktemp("project")
 
-    config = (
-        DEFAULT_CONFIG
-        + """
+    config = DEFAULT_CONFIG + """
 check_patterns =
     src/spi/*.c*
     tests/test.cpp
     """
-    )
     tmpdir.join("platformio.ini").write(config)
 
     src_dir = tmpdir.mkdir("src")
@@ -808,13 +789,10 @@ check_src_filters =
 def test_check_sources_in_project_root(clirunner, validate_cliresult, tmpdir_factory):
     tmpdir = tmpdir_factory.mktemp("project")
 
-    config = (
-        """
+    config = """
 [platformio]
 src_dir = ./
-    """
-        + DEFAULT_CONFIG
-    )
+    """ + DEFAULT_CONFIG
     tmpdir.join("platformio.ini").write(config)
     tmpdir.join("main.cpp").write(TEST_CODE)
     tmpdir.mkdir("spi").join("uart.cpp").write(TEST_CODE)
@@ -832,13 +810,10 @@ def test_check_sources_in_external_dir(clirunner, validate_cliresult, tmpdir_fac
     tmpdir = tmpdir_factory.mktemp("project")
     external_src_dir = tmpdir_factory.mktemp("external_src_dir")
 
-    config = (
-        f"""
+    config = f"""
 [platformio]
 src_dir = {external_src_dir}
-    """
-        + DEFAULT_CONFIG
-    )
+    """ + DEFAULT_CONFIG
     tmpdir.join("platformio.ini").write(config)
     external_src_dir.join("main.cpp").write(TEST_CODE)
 

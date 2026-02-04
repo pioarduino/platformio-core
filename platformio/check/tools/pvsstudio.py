@@ -192,7 +192,7 @@ class PvsStudioCheckTool(CheckToolBase):  # pylint: disable=too-many-instance-at
             compiler = self.cc_path
 
         cmd = [
-            compiler,
+            '"%s"' % compiler,
             '"%s"' % src_file,
             "-E",
             "-o",

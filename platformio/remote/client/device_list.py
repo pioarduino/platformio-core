@@ -36,7 +36,7 @@ class DeviceListClient(RemoteClientBase):
             if not success:
                 click.secho(value, fg="red", err=True)
                 continue
-            (agent_name, devlist) = value
+            agent_name, devlist = value
             data[agent_name] = devlist
 
         if self.json_output:

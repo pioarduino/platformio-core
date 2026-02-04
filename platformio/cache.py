@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import codecs
 import hashlib
 import os
 from time import time
@@ -57,7 +56,7 @@ class ContentCache:
         cache_path = self.get_cache_path(key)
         if not os.path.isfile(cache_path):
             return None
-        with codecs.open(cache_path, "rb", encoding="utf8") as fp:
+        with open(cache_path, "r", encoding="utf8") as fp:
             return fp.read()
 
     def set(self, key, data, valid):
@@ -78,7 +77,7 @@ class ContentCache:
         if not os.path.isdir(os.path.dirname(cache_path)):
             os.makedirs(os.path.dirname(cache_path))
         try:
-            with codecs.open(cache_path, mode="wb", encoding="utf8") as fp:
+            with open(cache_path, mode="w", encoding="utf8") as fp:
                 fp.write(data)
             with open(self._db_path, mode="a", encoding="utf8") as fp:
                 fp.write("%s=%s\n" % (str(expire_time), os.path.basename(cache_path)))

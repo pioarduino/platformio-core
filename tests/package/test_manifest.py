@@ -284,12 +284,10 @@ includes=Arduino.h, Arduino Space.hpp
     }
 
     # Author + Maintainer
-    data = parser.LibraryPropertiesManifestParser(
-        """
+    data = parser.LibraryPropertiesManifestParser("""
 author=Rocket Scream Electronics <broken-email.com>
 maintainer=Rocket Scream Electronics
-"""
-    ).as_dict()
+""").as_dict()
     assert data["authors"] == [
         {"name": "Rocket Scream Electronics", "maintainer": True}
     ]
