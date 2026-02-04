@@ -10,3 +10,5 @@ coverage.xml
 .coverage
 htmlcov
 .pytest_cache
+.vscode/settings.json
+.DS_Store
