@@ -2,7 +2,7 @@
 % import os
 % import re
 %
-% recommendations = set(["pioarduino.pioarduino-ide"])
+% recommendations = set(["pioarduino.pioarduino-ide", "Jason2866.esp-decoder"])
 % unwantedRecommendations = set(["ms-vscode.cpptools-extension-pack"])
 % previous_json = os.path.join(project_dir, ".vscode", "extensions.json")
 % if os.path.isfile(previous_json):

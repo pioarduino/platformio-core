@@ -74,7 +74,7 @@ class DebugServerProcess(DebugBaseProcess):
             if server["cwd"]:
                 args.extend(["-s", server["cwd"]])
             args.extend(
-                ["-c", "gdb_port pipe; tcl_port disabled; telnet_port disabled"]
+                ["-c", "gdb port pipe; tcl port disabled; telnet port disabled"]
             )
             args.extend(server["arguments"])
             str_args = " ".join(
