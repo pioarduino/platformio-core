@@ -15,7 +15,7 @@
 VERSION = (6, 1, 19)
 __version__ = ".".join([str(s) for s in VERSION])
 
-__title__ = "pioarduino core"
+__title__ = "pioarduino"
 __description__ = (
     "pioarduino core is needed to run pioarduino Platform espressif32. "
 )
