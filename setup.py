@@ -37,7 +37,7 @@ setup(
     license="Apache-2.0",
     install_requires=get_pip_dependencies(),
     python_requires=">=3.10",
-    packages=find_packages(include=["platformio", "platformio.*"]),
+    packages=find_packages(include=["platformio", "platformio.*"], exclude=["tests", "tests.*"]),
     package_data={
         "platformio": [
             "assets/system/99-platformio-udev.rules",
