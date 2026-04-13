@@ -95,15 +95,13 @@ def test_build_legacy_spec(isolated_pio_core, tmpdir_factory):
     pm = PlatformPackageManager(str(storage_dir))
     # test src manifest
     pkg1_dir = storage_dir.join("pkg-1").mkdir()
-    pkg1_dir.join(".pio").mkdir().join(".piopkgmanager.json").write(
-        """
+    pkg1_dir.join(".pio").mkdir().join(".piopkgmanager.json").write("""
 {
     "name": "StreamSpy-0.0.1.tar",
     "url": "https://dl.platformio.org/e8936b7/StreamSpy-0.0.1.tar.gz",
     "requirements": null
 }
-"""
-    )
+""")
     assert pm.build_legacy_spec(str(pkg1_dir)) == PackageSpec(
         name="StreamSpy-0.0.1.tar",
         uri="https://dl.platformio.org/e8936b7/StreamSpy-0.0.1.tar.gz",
@@ -181,12 +179,10 @@ def test_install_from_uri(isolated_pio_core, tmpdir_factory):
 
     # install from registry
     src_dir = tmp_dir.join("registry-1").mkdir()
-    src_dir.join("library.properties").write(
-        """
+    src_dir.join("library.properties").write("""
 name = wifilib
 version = 5.2.7
-"""
-    )
+""")
     spec = PackageSpec("company/wifilib @ ^5")
     pkg = lm.install_from_uri("file://%s" % src_dir, spec)
     assert str(pkg.metadata.version) == "5.2.7"
@@ -257,26 +253,22 @@ def test_install_force(isolated_pio_core, tmpdir_factory):
 def test_symlink(tmp_path: Path):
     external_pkg_dir = tmp_path / "External"
     external_pkg_dir.mkdir()
-    (external_pkg_dir / "library.json").write_text(
-        """
+    (external_pkg_dir / "library.json").write_text("""
 {
     "name": "External",
     "version": "1.0.0"
 }
-"""
-    )
+""")
 
     storage_dir = tmp_path / "storage"
     installed_pkg_dir = storage_dir / "installed"
     installed_pkg_dir.mkdir(parents=True)
-    (installed_pkg_dir / "library.json").write_text(
-        """
+    (installed_pkg_dir / "library.json").write_text("""
 {
     "name": "Installed",
     "version": "1.0.0"
 }
-"""
-    )
+""")
 
     spec = "CustomExternal=symlink://%s" % str(external_pkg_dir)
     lm = LibraryPackageManager(str(storage_dir))
@@ -317,8 +309,7 @@ def test_scripts(isolated_pio_core, tmp_path: Path):
     pkg_dir = tmp_path / "foo"
     scripts_dir = pkg_dir / "scripts"
     scripts_dir.mkdir(parents=True)
-    (scripts_dir / "script.py").write_text(
-        """
+    (scripts_dir / "script.py").write_text("""
 import sys
 from pathlib import Path
 
@@ -327,10 +318,8 @@ Path("%s.flag" % action).touch()
 
 if action == "preuninstall":
     Path("../%s.flag" % action).touch()
-"""
-    )
-    (pkg_dir / "library.json").write_text(
-        """
+""")
+    (pkg_dir / "library.json").write_text("""
 {
     "name": "foo",
     "version": "1.0.0",
@@ -339,8 +328,7 @@ if action == "preuninstall":
         "preuninstall2": ["scripts/script.py", "preuninstall"]
     }
 }
-"""
-    )
+""")
 
     storage_dir = tmp_path / "storage"
     lm = LibraryPackageManager(str(storage_dir))
@@ -356,8 +344,7 @@ def test_install_circular_dependencies(tmp_path: Path):
     # Foo
     pkg_dir = storage_dir / "foo"
     pkg_dir.mkdir(parents=True)
-    (pkg_dir / "library.json").write_text(
-        """
+    (pkg_dir / "library.json").write_text("""
 {
     "name": "Foo",
     "version": "1.0.0",
@@ -365,13 +352,11 @@ def test_install_circular_dependencies(tmp_path: Path):
         "Bar": "*"
     }
 }
-"""
-    )
+""")
     # Bar
     pkg_dir = storage_dir / "bar"
     pkg_dir.mkdir(parents=True)
-    (pkg_dir / "library.json").write_text(
-        """
+    (pkg_dir / "library.json").write_text("""
 {
     "name": "Bar",
     "version": "1.0.0",
@@ -379,8 +364,7 @@ def test_install_circular_dependencies(tmp_path: Path):
         "Foo": "*"
     }
 }
-"""
-    )
+""")
 
     lm = LibraryPackageManager(str(storage_dir))
     lm.set_log_level(logging.ERROR)
@@ -389,8 +373,7 @@ def test_install_circular_dependencies(tmp_path: Path):
     # root library
     pkg_dir = tmp_path / "root"
     pkg_dir.mkdir(parents=True)
-    (pkg_dir / "library.json").write_text(
-        """
+    (pkg_dir / "library.json").write_text("""
 {
     "name": "Root",
     "version": "1.0.0",
@@ -399,8 +382,7 @@ def test_install_circular_dependencies(tmp_path: Path):
         "Bar": "^1.0.0"
     }
 }
-"""
-    )
+""")
     lm.install("file://%s" % str(pkg_dir))
 
 
@@ -409,14 +391,7 @@ def test_get_installed(isolated_pio_core, tmpdir_factory):
     pm = ToolPackageManager(str(storage_dir))
 
     # VCS package
-    (
-        storage_dir.join("pkg-vcs")
-        .mkdir()
-        .join(".git")
-        .mkdir()
-        .join(".piopm")
-        .write(
-            """
+    (storage_dir.join("pkg-vcs").mkdir().join(".git").mkdir().join(".piopm").write("""
 {
   "name": "pkg-via-vcs",
   "spec": {
@@ -429,9 +404,7 @@ def test_get_installed(isolated_pio_core, tmpdir_factory):
   "type": "tool",
   "version": "0.0.0+sha.1ea4d5e"
 }
-"""
-        )
-    )
+"""))
 
     # package without metadata file
     (
@@ -444,8 +417,7 @@ def test_get_installed(isolated_pio_core, tmpdir_factory):
     # package with metadata file
     foo_dir = storage_dir.join("foo").mkdir()
     foo_dir.join("package.json").write('{"name": "foo", "version": "3.6.0"}')
-    foo_dir.join(".piopm").write(
-        """
+    foo_dir.join(".piopm").write("""
 {
   "name": "foo",
   "spec": {
@@ -456,8 +428,7 @@ def test_get_installed(isolated_pio_core, tmpdir_factory):
   "type": "tool",
   "version": "3.6.0"
 }
-"""
-    )
+""")
 
     # test "system"
     storage_dir.join("pkg-incompatible-system").mkdir().join("package.json").write(
@@ -579,12 +550,12 @@ def test_update_with_metadata(isolated_pio_core, tmpdir_factory):
     # test wanted
     outdated = lm.outdated(pkg, PackageSpec("ArduinoJson@~6"))
     assert str(outdated.current) == "6.19.4"
-    assert str(outdated.wanted) == "6.21.5"
+    assert str(outdated.wanted) == "6.21.6"
     assert outdated.latest > semantic_version.Version("6.16.0")
 
     # update to the wanted 6.x
     new_pkg = lm.update("ArduinoJson@^6", PackageSpec("ArduinoJson@^6"))
-    assert str(new_pkg.metadata.version) == "6.21.5"
+    assert str(new_pkg.metadata.version) == "6.21.6"
     # check that old version is removed
     assert len(lm.get_installed()) == 2
 
