@@ -12,11 +12,11 @@ Release Notes
 
 .. _release_notes_6:
 
-PlatformIO Core 6
------------------
+pioarduino Core 6 (based on PlatformIO Core 6)
+-----------------------------------------------
 
 Unlock the true potential of embedded software development with
-PlatformIO's collaborative ecosystem, embracing declarative principles,
+a collaborative ecosystem, embracing declarative principles,
 test-driven methodologies, and modern toolchains for unrivaled success.
 
 6.1.19 (2026-02-04)
@@ -105,13 +105,13 @@ test-driven methodologies, and modern toolchains for unrivaled success.
 6.1.11 (2023-08-31)
 ~~~~~~~~~~~~~~~~~~~
 
-* Resolved a possible issue that may cause generated projects for `PlatformIO IDE for VSCode <https://docs.platformio.org/en/latest/integration/ide/vscode.html>`__ to fail to launch a debug session because of a missing "objdump" binary when GDB is not part of the toolchain package
+* Resolved a possible issue that may cause generated projects for `pioarduino IDE for VS Code <https://github.com/pioarduino/pioarduino-vscode-ide>`__ to fail to launch a debug session because of a missing "objdump" binary when GDB is not part of the toolchain package
 * Resolved a regression issue that resulted in the malfunction of the Memory Inspection feature within |PIOHOME|
 
 6.1.10 (2023-08-11)
 ~~~~~~~~~~~~~~~~~~~
 
-* Resolved an issue that caused generated projects for `PlatformIO IDE for VSCode <https://docs.platformio.org/en/latest/integration/ide/vscode.html>`__ to break when the ``-iprefix`` compiler flag was used
+* Resolved an issue that caused generated projects for `pioarduino IDE for VS Code <https://github.com/pioarduino/pioarduino-vscode-ide>`__ to break when the ``-iprefix`` compiler flag was used
 * Resolved an issue encountered while utilizing the `pio pkg exec <https://docs.platformio.org/en/latest/core/userguide/pkg/cmd_exec.html>`__ command on the Windows platform to execute Python scripts from a package
 * Implemented a crucial improvement to the `pio run <https://docs.platformio.org/en/latest/core/userguide/cmd_run.html>`__ command, guaranteeing that the ``monitor`` target is not executed if any of the preceding targets, such as ``upload``, encounter failures
 * `Cppcheck <https://docs.platformio.org/en/latest/plus/check-tools/cppcheck.html>`__ v2.11 with new checks, CLI commands and various analysis improvements
@@ -376,34 +376,34 @@ Please check the `Migration guide from 5.x to 6.0 <https://docs.platformio.org/e
 
 .. _release_notes_5:
 
-PlatformIO Core 5
------------------
+Upstream PlatformIO Core 5
+--------------------------
 
 See `PlatformIO Core 5.0 history <https://github.com/platformio/platformio-core/blob/v5.2.5/HISTORY.rst>`__.
 
 .. _release_notes_4:
 
-PlatformIO Core 4
------------------
+Upstream PlatformIO Core 4
+--------------------------
 
 See `PlatformIO Core 4.0 history <https://github.com/platformio/platformio-core/blob/v4.3.4/HISTORY.rst>`__.
 
-PlatformIO Core 3
------------------
+Upstream PlatformIO Core 3
+--------------------------
 
 See `PlatformIO Core 3.0 history <https://github.com/platformio/platformio-core/blob/v3.6.7/HISTORY.rst>`__.
 
-PlatformIO Core 2
------------------
+Upstream PlatformIO Core 2
+--------------------------
 
 See `PlatformIO Core 2.0 history <https://github.com/platformio/platformio-core/blob/v2.11.2/HISTORY.rst>`__.
 
-PlatformIO Core 1
------------------
+Upstream PlatformIO Core 1
+--------------------------
 
 See `PlatformIO Core 1.0 history <https://github.com/platformio/platformio-core/blob/v1.5.0/HISTORY.rst>`__.
 
-PlatformIO Core Preview
------------------------
+Upstream PlatformIO Core Preview
+--------------------------------
 
 See `PlatformIO Core Preview history <https://github.com/platformio/platformio-core/blob/v0.10.2/HISTORY.rst>`__.
