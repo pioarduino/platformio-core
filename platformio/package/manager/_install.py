@@ -109,13 +109,6 @@ class PackageManagerInstallMixin:
 
         if not pkg:
             if spec.external and spec.uri and spec.uri.startswith("file://"):
-                self.log.warning(
-                    click.style(
-                        "Warning! Could not install package '%s': path not found, "
-                        "skipping..." % spec.humanize(),
-                        fg="yellow",
-                    )
-                )
                 return None
         if not pkg or not pkg.metadata:
             raise PackageException(
