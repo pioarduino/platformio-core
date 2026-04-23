@@ -107,6 +107,16 @@ class PackageManagerInstallMixin:
                 ),
             )
 
+        if not pkg:
+            if spec.external and spec.uri and spec.uri.startswith("file://"):
+                self.log.warning(
+                    click.style(
+                        "Warning! Could not install package '%s': path not found, "
+                        "skipping..." % spec.humanize(),
+                        fg="yellow",
+                    )
+                )
+                return None
         if not pkg or not pkg.metadata:
             raise PackageException(
                 "Could not install package '%s' for '%s' system"
@@ -182,9 +192,15 @@ class PackageManagerInstallMixin:
                 _uri = uri[7:]
                 if os.path.isfile(_uri):
                     self.unpack(_uri, tmp_dir)
-                else:
+                elif os.path.isdir(_uri):
                     fs.rmtree(tmp_dir)
                     shutil.copytree(_uri, tmp_dir, symlinks=True)
+                else:
+                    click.secho(
+                        "Warning! Library not found at %s, skipping..." % _uri,
+                        fg="yellow",
+                    )
+                    return None
             elif uri.startswith(("http://", "https://")):
                 dl_path = self.download(uri, checksum)
                 assert os.path.isfile(dl_path)
