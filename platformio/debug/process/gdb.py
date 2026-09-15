@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import os
 import signal
 import time
 
-from platformio import telemetry
-from platformio.compat import is_bytes
+from platformio.compat import aio_get_running_loop, is_bytes
 from platformio.debug import helpers
-from platformio.debug.exception import DebugInitError
 from platformio.debug.process.client import DebugClientProcess
 
 
@@ -131,7 +128,6 @@ class GDBClientProcess(DebugClientProcess):
         self._handle_error(data)
         # go to init break automatically
         if self.INIT_COMPLETED_BANNER.encode() in data:
-            telemetry.log_debug_started(self.debug_config)
             self._auto_exec_continue()
 
     def console_log(self, msg):
@@ -142,7 +138,7 @@ class GDBClientProcess(DebugClientProcess):
     def _auto_exec_continue(self):
         auto_exec_delay = 0.5  # in seconds
         if self._last_activity > (time.time() - auto_exec_delay):
-            asyncio.get_running_loop().call_later(0.1, self._auto_exec_continue)
+            aio_get_running_loop().call_later(0.1, self._auto_exec_continue)
             return
 
         if not self.debug_config.init_break or self._target_is_running:
@@ -176,7 +172,4 @@ class GDBClientProcess(DebugClientProcess):
             and b"Error in sourced" in self._errors_buffer
         ):
             return
-        telemetry.log_debug_exception(
-            DebugInitError(self._errors_buffer.decode()), self.debug_config
-        )
         self.transport.close()

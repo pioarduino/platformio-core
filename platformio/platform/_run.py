@@ -21,7 +21,7 @@ from urllib.parse import quote
 
 import click
 
-from platformio import app, fs, proc, telemetry
+from platformio import app, fs, proc
 from platformio.compat import hashlib_encode_data
 from platformio.package.manager.core import get_core_package_dir
 from platformio.platform.exception import BuildScriptNotFound
@@ -60,7 +60,6 @@ class PlatformRunMixin:
         if not os.path.isfile(variables["build_script"]):
             raise BuildScriptNotFound(variables["build_script"])
 
-        telemetry.log_platform_run(self, self.config, variables["pioenv"], targets)
         result = self._run_scons(variables, targets, jobs)
 
         assert "returncode" in result

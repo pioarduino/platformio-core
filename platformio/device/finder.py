@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import sys
 from fnmatch import fnmatch
 from functools import lru_cache
 
@@ -154,7 +155,16 @@ class SerialPortFinder:
 
         # pick the best PID:VID USB device
         port = best_port = None
-        for item in list_serial_ports():
+        port_list = list_serial_ports()
+        # macOS-specific: filter out unwanted ports
+        if sys.platform == "darwin":
+            port_list = [
+                item for item in port_list
+                if not item["port"].endswith(
+                    ("Bluetooth-Incoming-Port", "wlan-debug", "debug-console")
+                )
+            ]
+        for item in port_list:
             if self.ensure_ready and not is_serial_port_ready(item["port"]):
                 continue
             port = item["port"]
