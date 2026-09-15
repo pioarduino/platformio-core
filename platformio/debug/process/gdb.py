@@ -19,7 +19,6 @@ import time
 
 from platformio.compat import is_bytes
 from platformio.debug import helpers
-from platformio.debug.exception import DebugInitError
 from platformio.debug.process.client import DebugClientProcess
 
 
