@@ -23,7 +23,7 @@ def get_core_dependencies():
         ),
         "tool-scons": (
             "https://github.com/pioarduino/scons/releases/"
-            "download/4.8.1/scons-local-4.8.1.tar.gz"
+            "download/4.11.1/scons-local-4.11.1.tar.gz"
         ),
     }
 
