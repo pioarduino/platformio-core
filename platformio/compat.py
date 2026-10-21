@@ -84,11 +84,11 @@ def get_object_members(obj, ignore_private=True):
 
 
 def ensure_python3(raise_exception=True):
-    compatible = sys.version_info >= (3, 9)
+    compatible = sys.version_info >= (3, 10)
     if not raise_exception or compatible:
         return compatible
     raise UserSideException(
-        "Python 3.9 or later is required for this operation. \n"
+        "Python 3.10 or later is required for this operation. \n"
         "Please check system requirements:\n"
         "https://docs.platformio.org/en/latest/core/installation/requirements.html"
     )
