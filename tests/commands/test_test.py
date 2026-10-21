@@ -13,14 +13,12 @@
 # limitations under the License.
 
 import os
-import shutil
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
 
-from platformio import proc
 from platformio.fs import load_json
 from platformio.test.cli import cli as pio_test_cmd
 
@@ -494,9 +492,3 @@ int main(int argc, char **argv)
     json_report = load_json(str(json_output_path))
     assert json_report["testcase_nums"] == 1
     assert json_report["failure_nums"] == 1
-
-
-@pytest.mark.skipif(
-    sys.platform == "win32" and os.environ.get("GITHUB_ACTIONS") == "true",
-    reason="skip Github Actions on Windows (MinGW issue)",
-)
