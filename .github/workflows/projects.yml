@@ -11,7 +11,7 @@ jobs:
       matrix:
         project:
           - PlatformTest:
-            repository: "Jason2866/platform-test"
+            repository: "pioarduino/platform-test"
             folder: "src"
             config_dir: "src"
             env_name: "esp32-s3"
