@@ -21,6 +21,8 @@ from platformio.package.exception import (
     PackageException,
 )
 from platformio.package.meta import PackageItem, PackageMetadata, PackageSpec
+from platformio.project.config import ProjectConfig
+from platformio.project.exception import ProjectError
 
 
 class PackageManagerSymlinkMixin:
@@ -46,12 +48,10 @@ class PackageManagerSymlinkMixin:
                 os.path.normpath(os.path.join(base_dir, pkg_dir))
             ):
                 try:
-                    from platformio.project.config import ProjectConfig
-
                     base_dir = ProjectConfig.get_instance().get(
                         "platformio", "project_dir"
                     )
-                except Exception:
+                except (OSError, ProjectError):
                     base_dir = os.getcwd()
             pkg_dir = os.path.normpath(os.path.join(base_dir, pkg_dir))
         return (pkg_dir if os.path.isdir(pkg_dir) else None, spec)
@@ -78,12 +78,10 @@ class PackageManagerSymlinkMixin:
         pkg_dir = spec.uri[10:]
         if not os.path.isabs(pkg_dir):
             try:
-                from platformio.project.config import ProjectConfig
-
                 project_dir = ProjectConfig.get_instance().get(
                     "platformio", "project_dir"
                 )
-            except Exception:
+            except (OSError, ProjectError):
                 project_dir = os.getcwd()
             pkg_dir = os.path.normpath(os.path.join(project_dir, pkg_dir))
         if not os.path.isdir(pkg_dir):

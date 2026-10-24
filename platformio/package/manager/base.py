@@ -40,6 +40,8 @@ from platformio.package.meta import (
     PackageType,
 )
 from platformio.proc import get_pythonexe_path
+from platformio.project.config import ProjectConfig
+from platformio.project.exception import ProjectError
 from platformio.project.helpers import get_project_cache_dir
 
 
@@ -291,41 +293,36 @@ class BasePackageManager(  # pylint: disable=too-many-public-methods,too-many-in
                 and os.path.normcase(os.path.realpath(pkg.path))
                 == os.path.normcase(os.path.realpath(spec.uri[10:])),
             ]
-            if any(check_conds):
-                return True
             if pkg.metadata and pkg.metadata.spec and pkg.metadata.spec.uri:
                 norm_spec_uri = spec.uri.replace("\\", "/").rstrip("/")
                 norm_pkg_uri = pkg.metadata.spec.uri.replace("\\", "/").rstrip("/")
-                if norm_spec_uri == norm_pkg_uri:
-                    return True
+                check_conds.append(norm_spec_uri == norm_pkg_uri)
                 if spec.symlink and pkg.metadata.spec.symlink:
                     target = spec.uri[10:]
                     if not os.path.isabs(target):
                         try:
-                            from platformio.project.config import ProjectConfig
-
                             target = os.path.join(
                                 ProjectConfig.get_instance().get(
                                     "platformio", "project_dir"
                                 ),
                                 target,
                             )
-                        except Exception:
+                        except (OSError, ProjectError):
                             target = os.path.join(os.getcwd(), target)
-                    if os.path.normcase(os.path.realpath(pkg.path)) == os.path.normcase(
-                        os.path.realpath(target)
-                    ):
-                        return True
-            return False
+                    check_conds.append(
+                        os.path.normcase(os.path.realpath(pkg.path))
+                        == os.path.normcase(os.path.realpath(target))
+                    )
+            return any(check_conds)
 
         # "owner" mismatch
-        elif spec.owner and not ci_strings_are_equal(
+        if spec.owner and not ci_strings_are_equal(
             spec.owner, pkg.metadata.spec.owner
         ):
             return False
 
         # "name" mismatch
-        elif not spec.id and not ci_strings_are_equal(spec.name, pkg.metadata.name):
+        if not spec.id and not ci_strings_are_equal(spec.name, pkg.metadata.name):
             return False
 
         return True
