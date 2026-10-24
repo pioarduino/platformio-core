@@ -34,6 +34,11 @@ class PackageManagerSymlinkMixin:
         data = fs.load_json(path)
         spec = PackageSpec(**data["spec"])
         assert spec.symlink
+        # Prefer the pre-resolved absolute target stored at install time.
+        # Fall back to cwd + relative URI for older link files that lack it.
+        resolved_target = data.get("resolved_target")
+        if resolved_target and os.path.isdir(resolved_target):
+            return (resolved_target, spec)
         pkg_dir = spec.uri[10:]
         if not os.path.isabs(pkg_dir):
             base_dir = data.get("cwd")
