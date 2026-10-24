@@ -107,6 +107,16 @@ class PackageManagerSymlinkMixin:
                     and existing_pkg.metadata.spec.uri == spec.uri
                 ):
                     return existing_pkg
+        target_path = os.path.normcase(os.path.realpath(pkg_dir))
+        for name in os.listdir(self.package_dir):
+            existing_path = os.path.join(self.package_dir, name)
+            if existing_path == link_path or not self.is_symlink(existing_path):
+                continue
+            existing_pkg = self.get_symlinked_package(existing_path)
+            if existing_pkg and os.path.normcase(
+                os.path.realpath(existing_pkg.path)
+            ) == target_path:
+                os.remove(existing_path)
         with open(link_path, mode="w", encoding="utf-8") as fp:
             json.dump(
                 dict(

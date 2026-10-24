@@ -401,6 +401,40 @@ def test_symlink_stores_target_without_resolving_filesystem_symlink(tmp_path: Pa
     assert Path(resolved_target) == symlink_target
 
 
+def test_symlink_migrates_link_when_alias_changes(tmp_path: Path):
+    real_target = tmp_path / "real"
+    real_target.mkdir()
+    first_alias = tmp_path / "first-alias"
+    second_alias = tmp_path / "second-alias"
+    try:
+        first_alias.symlink_to(real_target, target_is_directory=True)
+        second_alias.symlink_to(real_target, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"Directory symlinks are unavailable: {exc}")
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    lm = LibraryPackageManager(str(storage_dir))
+
+    assert lm.install(f"symlink://{first_alias}") is not None
+    old_link = storage_dir / "first-alias.pio-link"
+    new_link = storage_dir / "second-alias.pio-link"
+    assert old_link.is_file()
+
+    pkg = lm.install(f"symlink://{second_alias}")
+
+    assert pkg is not None
+    assert not old_link.exists()
+    assert new_link.is_file()
+    assert [item.metadata.spec.uri for item in lm.get_installed()] == [
+        f"symlink://{second_alias}"
+    ]
+
+    lm.uninstall(f"symlink://{second_alias}")
+    assert not new_link.exists()
+    assert real_target.is_dir()
+
+
 def test_symlink_without_manifest(tmp_path: Path):
     external_pkg_dir = tmp_path / "libs" / "NoManifestLib"
     external_pkg_dir.mkdir(parents=True)
