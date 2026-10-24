@@ -355,6 +355,33 @@ def test_symlink_no_reinstall(tmp_path: Path, reset_project_config_cache):
     assert mtime_before == mtime_after
 
 
+def test_symlink_uses_install_target_when_cwd_target_exists(
+    tmp_path: Path, monkeypatch, reset_project_config_cache
+):
+    working_dir = tmp_path / "working"
+    project_dir = tmp_path / "project"
+    relative_target = Path("libs/LocalLib")
+    working_target = working_dir / relative_target
+    project_target = project_dir / relative_target
+    working_target.mkdir(parents=True)
+    project_target.mkdir(parents=True)
+    monkeypatch.chdir(working_dir)
+
+    storage_dir = project_dir / ".pio" / "libdeps" / "debug"
+    storage_dir.mkdir(parents=True)
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(project_dir))
+
+    lm = LibraryPackageManager(str(storage_dir))
+    pkg = lm.install(f"symlink://{relative_target.as_posix()}")
+
+    assert pkg is not None
+    assert Path(pkg.path) == project_target.resolve()
+
+
 def test_symlink_without_manifest(tmp_path: Path):
     external_pkg_dir = tmp_path / "libs" / "NoManifestLib"
     external_pkg_dir.mkdir(parents=True)

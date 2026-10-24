@@ -99,7 +99,14 @@ class PackageManagerSymlinkMixin:
             ) == os.path.normcase(os.path.realpath(pkg_dir)):
                 return existing_pkg
         with open(link_path, mode="w", encoding="utf-8") as fp:
-            json.dump(dict(cwd=os.getcwd(), spec=spec.as_dict()), fp)
+            json.dump(
+                dict(
+                    cwd=os.getcwd(),
+                    spec=spec.as_dict(),
+                    resolved_target=os.path.realpath(pkg_dir),
+                ),
+                fp,
+            )
         return self.get_symlinked_package(link_path)
 
     def uninstall_symlink(self, spec):
