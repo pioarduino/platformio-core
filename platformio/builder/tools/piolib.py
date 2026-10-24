@@ -1028,7 +1028,9 @@ class ProjectAsLibBuilder(LibBuilderBase):
                 if not pkg:
                     continue
                 for lb in self.env.GetLibBuilders():
-                    if pkg.path != lb.path:
+                    if os.path.normcase(
+                        os.path.realpath(pkg.path)
+                    ) != os.path.normcase(os.path.realpath(lb.path)):
                         continue
                     if lb not in self.depbuilders:
                         self.depend_on(lb, recursive=False)
@@ -1112,6 +1114,7 @@ def GetLibBuilders(_):  # pylint: disable=too-many-branches
                 lib_dir, _ = LibraryPackageManager.resolve_symlink(lib_dir)
             if not lib_dir or not os.path.isdir(lib_dir):
                 continue
+            lib_dir = os.path.realpath(lib_dir)
             try:
                 lb = LibBuilderFactory.new(env, lib_dir)
             except exception.InvalidJSONFile:
