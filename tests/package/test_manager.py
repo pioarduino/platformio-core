@@ -36,7 +36,10 @@ from platformio.package.pack import PackagePacker
 from platformio.project.config import ProjectConfig
 
 
-def _reset_project_config_cache():
+@pytest.fixture
+def reset_project_config_cache():
+    ProjectConfig._instances.clear()  # pylint: disable=protected-access
+    yield
     ProjectConfig._instances.clear()  # pylint: disable=protected-access
 
 
@@ -318,7 +321,7 @@ def test_symlink(tmp_path: Path):
     assert ["Installed"] == [pkg.metadata.name for pkg in lm.get_installed()]
 
 
-def test_symlink_no_reinstall(tmp_path: Path):
+def test_symlink_no_reinstall(tmp_path: Path, reset_project_config_cache):
     external_pkg_dir = tmp_path / "libs" / "LibA"
     external_pkg_dir.mkdir(parents=True)
     (external_pkg_dir / "library.properties").write_text("name=DifferentName\nversion=1.0.0\n")
@@ -328,7 +331,6 @@ def test_symlink_no_reinstall(tmp_path: Path):
     storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
     storage_dir.mkdir(parents=True)
 
-    _reset_project_config_cache()
     cfg = ProjectConfig.get_instance()
     cfg.enable_warnings = False
     if not cfg.has_section("platformio"):
@@ -369,7 +371,7 @@ def test_symlink_without_manifest(tmp_path: Path):
     assert lm.get_package(spec) is not None
 
 
-def test_symlink_path_variations(tmp_path: Path):
+def test_symlink_path_variations(tmp_path: Path, reset_project_config_cache):
     external_pkg_dir = tmp_path / "libs" / "LibB"
     external_pkg_dir.mkdir(parents=True)
     (external_pkg_dir / "library.json").write_text('{"name":"LibB","version":"1.0.0"}')
@@ -379,7 +381,6 @@ def test_symlink_path_variations(tmp_path: Path):
     storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
     storage_dir.mkdir(parents=True)
 
-    _reset_project_config_cache()
     cfg = ProjectConfig.get_instance()
     cfg.enable_warnings = False
     if not cfg.has_section("platformio"):
