@@ -33,6 +33,11 @@ from platformio.package.manager.platform import PlatformPackageManager
 from platformio.package.manager.tool import ToolPackageManager
 from platformio.package.meta import PackageSpec
 from platformio.package.pack import PackagePacker
+from platformio.project.config import ProjectConfig
+
+
+def _reset_project_config_cache():
+    ProjectConfig._instances.clear()  # pylint: disable=protected-access
 
 
 def test_download(isolated_pio_core):
@@ -323,8 +328,7 @@ def test_symlink_no_reinstall(tmp_path: Path):
     storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
     storage_dir.mkdir(parents=True)
 
-    from platformio.project.config import ProjectConfig
-    ProjectConfig._instances = {}
+    _reset_project_config_cache()
     cfg = ProjectConfig.get_instance()
     cfg.enable_warnings = False
     if not cfg.has_section("platformio"):
@@ -375,8 +379,7 @@ def test_symlink_path_variations(tmp_path: Path):
     storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
     storage_dir.mkdir(parents=True)
 
-    from platformio.project.config import ProjectConfig
-    ProjectConfig._instances = {}
+    _reset_project_config_cache()
     cfg = ProjectConfig.get_instance()
     cfg.enable_warnings = False
     if not cfg.has_section("platformio"):
