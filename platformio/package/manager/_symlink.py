@@ -39,9 +39,11 @@ class PackageManagerSymlinkMixin:
         # Prefer the pre-resolved absolute target stored at install time.
         # Fall back to cwd + relative URI for older link files that lack it.
         resolved_target = data.get("resolved_target")
-        if resolved_target and os.path.isdir(resolved_target):
-            return (resolved_target, spec)
-        pkg_dir = spec.uri[10:]
+        if resolved_target:
+            resolved_target = os.path.abspath(resolved_target)
+            if os.path.isdir(resolved_target):
+                return (resolved_target, spec)
+        pkg_dir = spec.uri[10:].replace("\\", os.sep)
         if not os.path.isabs(pkg_dir):
             base_dir = data.get("cwd")
             if not base_dir or not os.path.isdir(
@@ -71,11 +73,13 @@ class PackageManagerSymlinkMixin:
                     version=self.generate_rand_version(),
                     spec=spec,
                 )
+        else:
+            pkg.metadata.spec = spec
         return pkg
 
     def install_symlink(self, spec):
         assert spec.symlink
-        pkg_dir = spec.uri[10:]
+        pkg_dir = spec.uri[10:].replace("\\", os.sep)
         if not os.path.isabs(pkg_dir):
             try:
                 project_dir = ProjectConfig.get_instance().get(
@@ -97,13 +101,18 @@ class PackageManagerSymlinkMixin:
             if existing_pkg and os.path.normcase(
                 os.path.realpath(existing_pkg.path)
             ) == os.path.normcase(os.path.realpath(pkg_dir)):
-                return existing_pkg
+                if (
+                    existing_pkg.metadata
+                    and existing_pkg.metadata.spec
+                    and existing_pkg.metadata.spec.uri == spec.uri
+                ):
+                    return existing_pkg
         with open(link_path, mode="w", encoding="utf-8") as fp:
             json.dump(
                 dict(
                     cwd=os.getcwd(),
                     spec=spec.as_dict(),
-                    resolved_target=os.path.realpath(pkg_dir),
+                    resolved_target=os.path.abspath(pkg_dir),
                 ),
                 fp,
             )

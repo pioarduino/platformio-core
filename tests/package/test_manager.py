@@ -382,6 +382,25 @@ def test_symlink_uses_install_target_when_cwd_target_exists(
     assert Path(pkg.path) == project_target.resolve()
 
 
+def test_symlink_stores_target_without_resolving_filesystem_symlink(tmp_path: Path):
+    real_target = tmp_path / "real"
+    real_target.mkdir()
+    symlink_target = tmp_path / "linked"
+    try:
+        symlink_target.symlink_to(real_target, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"Directory symlinks are unavailable: {exc}")
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    lm = LibraryPackageManager(str(storage_dir))
+    pkg = lm.install(f"symlink://{symlink_target}")
+
+    assert pkg is not None
+    resolved_target, _ = lm.resolve_symlink(str(storage_dir / "linked.pio-link"))
+    assert Path(resolved_target) == symlink_target
+
+
 def test_symlink_without_manifest(tmp_path: Path):
     external_pkg_dir = tmp_path / "libs" / "NoManifestLib"
     external_pkg_dir.mkdir(parents=True)
@@ -419,18 +438,27 @@ def test_symlink_path_variations(tmp_path: Path, reset_project_config_cache):
     spec1 = "symlink://../../libs/LibB"
     pkg = lm.install(spec1)
     assert pkg is not None
+    pkg.dump_meta()
 
     # Look up with backslashes
     spec_bs = "symlink://..\\..\\libs\\LibB"
     assert lm.get_package(spec_bs) is not None
 
-    # Calling install with backslashes should not rewrite
+    # Updating the URI should retain the resolved target and store the new URI.
     link_file = storage_dir / "LibB.pio-link"
-    mtime_before = link_file.stat().st_mtime_ns
     pkg2 = lm.install(spec_bs)
-    mtime_after = link_file.stat().st_mtime_ns
     assert pkg2 is not None
-    assert mtime_before == mtime_after
+    assert pkg2.metadata.spec.uri == spec_bs
+    assert fs.load_json(str(link_file))["spec"]["uri"] == spec_bs
+
+    # Reinstalling with the same URI should not rewrite the link file.
+    mtime_before = link_file.stat().st_mtime_ns
+    assert lm.install(spec_bs) is not None
+    assert link_file.stat().st_mtime_ns == mtime_before
+
+    # The updated URI can remove the link.
+    lm.uninstall(spec_bs)
+    assert not link_file.exists()
 
 
 def test_scripts(isolated_pio_core, tmp_path: Path):

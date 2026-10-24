@@ -74,6 +74,15 @@ class PackageManagerInstallMixin:
             self.uninstall(pkg)
             pkg = None
 
+        if (
+            pkg
+            and spec.symlink
+            and pkg.metadata
+            and pkg.metadata.spec
+            and pkg.metadata.spec.uri != spec.uri
+        ):
+            pkg = self.install_symlink(spec)
+
         if pkg:
             # avoid RecursionError for circular_dependencies
             self._INSTALL_HISTORY[spec] = pkg
