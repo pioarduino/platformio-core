@@ -33,6 +33,14 @@ from platformio.package.manager.platform import PlatformPackageManager
 from platformio.package.manager.tool import ToolPackageManager
 from platformio.package.meta import PackageSpec
 from platformio.package.pack import PackagePacker
+from platformio.project.config import ProjectConfig
+
+
+@pytest.fixture
+def reset_project_config_cache():
+    ProjectConfig._instances.clear()  # pylint: disable=protected-access
+    yield
+    ProjectConfig._instances.clear()  # pylint: disable=protected-access
 
 
 def test_download(isolated_pio_core):
@@ -311,6 +319,91 @@ def test_symlink(tmp_path: Path):
     fs.rmtree(str(external_pkg_dir))
     lm.memcache_reset()
     assert ["Installed"] == [pkg.metadata.name for pkg in lm.get_installed()]
+
+
+def test_symlink_no_reinstall(tmp_path: Path, reset_project_config_cache):
+    external_pkg_dir = tmp_path / "libs" / "LibA"
+    external_pkg_dir.mkdir(parents=True)
+    (external_pkg_dir / "library.properties").write_text("name=DifferentName\nversion=1.0.0\n")
+
+    proj_dir = tmp_path / "app" / "proj"
+    proj_dir.mkdir(parents=True)
+    storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
+    storage_dir.mkdir(parents=True)
+
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(proj_dir))
+
+    lm = LibraryPackageManager(str(storage_dir))
+    spec = "symlink://../../libs/LibA"
+    pkg = lm.install(spec)
+    assert pkg
+    link_file = storage_dir / "LibA.pio-link"
+    assert link_file.is_file()
+
+    # Verify get_package matches despite name difference in manifest
+    assert lm.get_package(spec) is not None
+
+    # Calling install again should not rewrite/modify the link file
+    mtime_before = link_file.stat().st_mtime_ns
+    pkg2 = lm.install(spec)
+    mtime_after = link_file.stat().st_mtime_ns
+    assert pkg2 is not None
+    assert mtime_before == mtime_after
+
+
+def test_symlink_without_manifest(tmp_path: Path):
+    external_pkg_dir = tmp_path / "libs" / "NoManifestLib"
+    external_pkg_dir.mkdir(parents=True)
+    (external_pkg_dir / "NoManifestLib.h").write_text("#pragma once\n")
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir(parents=True)
+
+    lm = LibraryPackageManager(str(storage_dir))
+    spec = f"symlink://{external_pkg_dir}"
+    pkg = lm.install(spec)
+    assert pkg is not None
+    assert pkg.metadata.name == "NoManifestLib"
+    assert lm.get_package(spec) is not None
+
+
+def test_symlink_path_variations(tmp_path: Path, reset_project_config_cache):
+    external_pkg_dir = tmp_path / "libs" / "LibB"
+    external_pkg_dir.mkdir(parents=True)
+    (external_pkg_dir / "library.json").write_text('{"name":"LibB","version":"1.0.0"}')
+
+    proj_dir = tmp_path / "app" / "proj"
+    proj_dir.mkdir(parents=True)
+    storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
+    storage_dir.mkdir(parents=True)
+
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(proj_dir))
+
+    lm = LibraryPackageManager(str(storage_dir))
+    # Install with forward slashes
+    spec1 = "symlink://../../libs/LibB"
+    pkg = lm.install(spec1)
+    assert pkg is not None
+
+    # Look up with backslashes
+    spec_bs = "symlink://..\\..\\libs\\LibB"
+    assert lm.get_package(spec_bs) is not None
+
+    # Calling install with backslashes should not rewrite
+    link_file = storage_dir / "LibB.pio-link"
+    mtime_before = link_file.stat().st_mtime_ns
+    pkg2 = lm.install(spec_bs)
+    mtime_after = link_file.stat().st_mtime_ns
+    assert pkg2 is not None
+    assert mtime_before == mtime_after
 
 
 def test_scripts(isolated_pio_core, tmp_path: Path):

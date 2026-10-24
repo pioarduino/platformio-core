@@ -1028,7 +1028,9 @@ class ProjectAsLibBuilder(LibBuilderBase):
                 if not pkg:
                     continue
                 for lb in self.env.GetLibBuilders():
-                    if pkg.path != lb.path:
+                    if os.path.normcase(
+                        os.path.realpath(pkg.path)
+                    ) != os.path.normcase(os.path.realpath(lb.path)):
                         continue
                     if lb not in self.depbuilders:
                         self.depend_on(lb, recursive=False)

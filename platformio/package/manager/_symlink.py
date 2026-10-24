@@ -16,8 +16,13 @@ import json
 import os
 
 from platformio import fs
-from platformio.package.exception import PackageException
-from platformio.package.meta import PackageItem, PackageSpec
+from platformio.package.exception import (
+    MissingPackageManifestError,
+    PackageException,
+)
+from platformio.package.meta import PackageItem, PackageMetadata, PackageSpec
+from platformio.project.config import ProjectConfig
+from platformio.project.exception import ProjectError
 
 
 class PackageManagerSymlinkMixin:
@@ -31,9 +36,24 @@ class PackageManagerSymlinkMixin:
         data = fs.load_json(path)
         spec = PackageSpec(**data["spec"])
         assert spec.symlink
+        # Prefer the pre-resolved absolute target stored at install time.
+        # Fall back to cwd + relative URI for older link files that lack it.
+        resolved_target = data.get("resolved_target")
+        if resolved_target and os.path.isdir(resolved_target):
+            return (resolved_target, spec)
         pkg_dir = spec.uri[10:]
         if not os.path.isabs(pkg_dir):
-            pkg_dir = os.path.normpath(os.path.join(data["cwd"], pkg_dir))
+            base_dir = data.get("cwd")
+            if not base_dir or not os.path.isdir(
+                os.path.normpath(os.path.join(base_dir, pkg_dir))
+            ):
+                try:
+                    base_dir = ProjectConfig.get_instance().get(
+                        "platformio", "project_dir"
+                    )
+                except (OSError, ProjectError):
+                    base_dir = os.getcwd()
+            pkg_dir = os.path.normpath(os.path.join(base_dir, pkg_dir))
         return (pkg_dir if os.path.isdir(pkg_dir) else None, spec)
 
     def get_symlinked_package(self, path):
@@ -41,13 +61,29 @@ class PackageManagerSymlinkMixin:
         if not pkg_dir:
             return None
         pkg = PackageItem(os.path.realpath(pkg_dir))
-        if not pkg.metadata:
-            pkg.metadata = self.build_metadata(pkg.path, spec)
+        if not pkg.metadata or not pkg.metadata.spec or not pkg.metadata.spec.symlink:
+            try:
+                pkg.metadata = self.build_metadata(pkg.path, spec)
+            except MissingPackageManifestError:
+                pkg.metadata = PackageMetadata(
+                    type=self.pkg_type,
+                    name=spec.name or os.path.basename(pkg.path),
+                    version=self.generate_rand_version(),
+                    spec=spec,
+                )
         return pkg
 
     def install_symlink(self, spec):
         assert spec.symlink
         pkg_dir = spec.uri[10:]
+        if not os.path.isabs(pkg_dir):
+            try:
+                project_dir = ProjectConfig.get_instance().get(
+                    "platformio", "project_dir"
+                )
+            except (OSError, ProjectError):
+                project_dir = os.getcwd()
+            pkg_dir = os.path.normpath(os.path.join(project_dir, pkg_dir))
         if not os.path.isdir(pkg_dir):
             raise PackageException(
                 f"Can not create a symbolic link for `{pkg_dir}`, not a directory"
@@ -56,6 +92,12 @@ class PackageManagerSymlinkMixin:
             self.package_dir,
             "%s.pio-link" % (spec.name or os.path.basename(os.path.abspath(pkg_dir))),
         )
+        if os.path.isfile(link_path):
+            existing_pkg = self.get_symlinked_package(link_path)
+            if existing_pkg and os.path.normcase(
+                os.path.realpath(existing_pkg.path)
+            ) == os.path.normcase(os.path.realpath(pkg_dir)):
+                return existing_pkg
         with open(link_path, mode="w", encoding="utf-8") as fp:
             json.dump(dict(cwd=os.getcwd(), spec=spec.as_dict()), fp)
         return self.get_symlinked_package(link_path)
@@ -67,5 +109,10 @@ class PackageManagerSymlinkMixin:
             if not self.is_symlink(path):
                 continue
             pkg = self.get_symlinked_package(path)
-            if pkg.metadata.spec.uri == spec.uri:
+            if (
+                pkg
+                and pkg.metadata
+                and pkg.metadata.spec
+                and pkg.metadata.spec.uri == spec.uri
+            ):
                 os.remove(path)
