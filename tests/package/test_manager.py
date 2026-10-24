@@ -36,8 +36,8 @@ from platformio.package.pack import PackagePacker
 from platformio.project.config import ProjectConfig
 
 
-@pytest.fixture
-def reset_project_config_cache():
+@pytest.fixture(name="reset_project_config_cache")
+def _project_config_cache():
     ProjectConfig._instances.clear()  # pylint: disable=protected-access
     yield
     ProjectConfig._instances.clear()  # pylint: disable=protected-access
