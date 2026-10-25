@@ -95,7 +95,7 @@ class VCSClientFactory:
         if not marker or not rest or rest[0] != marker or len(rest) < 2:
             return remote_url, None, None
 
-        tag = rest[1]
+        tag = unquote(rest[1])
         subdir_parts = [unquote(s) for s in rest[2:]]
         if any(s in ("", ".", "..") for s in subdir_parts):
             return remote_url, None, None
