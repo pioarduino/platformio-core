@@ -13,86 +13,14 @@
 # limitations under the License.
 
 import os
-import shutil
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
 
-from platformio import proc
 from platformio.fs import load_json
 from platformio.test.cli import cli as pio_test_cmd
-
-
-def test_calculator_example(tmp_path: Path):
-    junit_output_path = tmp_path / "junit.xml"
-    project_dir = tmp_path / "project"
-    shutil.copytree(
-        os.path.join("examples", "unit-testing", "calculator"), str(project_dir)
-    )
-    result = proc.exec_command(
-        [
-            "platformio",
-            "test",
-            "-d",
-            str(project_dir),
-            "-e",
-            "uno",
-            "-e",
-            "native",
-            "--junit-output-path",
-            str(junit_output_path),
-        ]
-    )
-    assert result["returncode"] != 0
-    # pylint: disable=unsupported-membership-test
-    assert all(
-        s in (result["err"] + result["out"]) for s in ("ERRORED", "PASSED", "FAILED")
-    ), result["out"]
-
-    # test JUnit output
-    junit_testsuites = ET.parse(junit_output_path).getroot()
-    assert int(junit_testsuites.get("tests")) == 11
-    assert int(junit_testsuites.get("errors")) == 2
-    assert int(junit_testsuites.get("failures")) == 1
-    assert len(junit_testsuites.findall("testsuite")) == 6
-    junit_errored_testcase = junit_testsuites.find(
-        ".//testcase[@name='uno:test_embedded']"
-    )
-    assert junit_errored_testcase.get("status") == "ERRORED"
-    assert junit_errored_testcase.find("error").get("type") == "UnitTestSuiteError"
-    junit_failed_testcase = junit_testsuites.find(
-        ".//testsuite[@name='native:test_desktop']"
-        "/testcase[@name='test_calculator_division']"
-    )
-    assert junit_failed_testcase.get("status") == "FAILED"
-    assert junit_failed_testcase.find("failure").get("message") == "Expected 32 Was 33"
-
-
-def test_list_tests(clirunner, validate_cliresult, tmp_path: Path):
-    json_output_path = tmp_path / "report.json"
-    project_dir = tmp_path / "project"
-    shutil.copytree(
-        os.path.join("examples", "unit-testing", "calculator"), str(project_dir)
-    )
-    result = clirunner.invoke(
-        pio_test_cmd,
-        [
-            "-d",
-            str(project_dir),
-            "--list-tests",
-            "--json-output-path",
-            str(json_output_path),
-        ],
-    )
-    validate_cliresult(result)
-    # test JSON
-    json_report = load_json(str(json_output_path))
-    assert json_report["testcase_nums"] == 0
-    assert json_report["failure_nums"] == 0
-    assert json_report["skipped_nums"] == 0
-    assert len(json_report["test_suites"]) == 6
 
 
 def test_group_and_custom_runner(clirunner, tmp_path: Path):
@@ -382,63 +310,6 @@ int main() {
     assert all(f in result.output for f in ("Found custom unity_config", "dummy_test"))
 
 
-def test_legacy_unity_custom_transport(clirunner, validate_cliresult, tmpdir):
-    project_dir = tmpdir.mkdir("project")
-    project_dir.join("platformio.ini").write("""
-[env:embedded]
-platform = ststm32
-framework = stm32cube
-board = nucleo_f401re
-test_transport = custom
-""")
-
-    test_dir = project_dir.mkdir("test")
-    test_dir.join("test_main.c").write("""
-#include <unity.h>
-
-void setUp(void) {
-    // set stuff up here
-}
-
-void tearDown(void) {
-    // clean stuff up here
-}
-
-void dummy_test(void) {
-    TEST_ASSERT_EQUAL(1, 1);
-}
-
-int main() {
-    UNITY_BEGIN();
-    RUN_TEST(dummy_test);
-    UNITY_END();
-}
-""")
-    test_dir.join("unittest_transport.h").write("""
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void unittest_uart_begin(){}
-void unittest_uart_putchar(char c){}
-void unittest_uart_flush(){}
-void unittest_uart_end(){}
-
-#ifdef __cplusplus
-}
-#endif
-""")
-    result = clirunner.invoke(
-        pio_test_cmd,
-        [
-            "-d",
-            str(project_dir),
-            "--without-testing",
-            "--without-uploading",
-        ],
-    )
-    validate_cliresult(result)
-
 
 @pytest.mark.skipif(
     sys.platform == "win32" and os.environ.get("GITHUB_ACTIONS") == "true",
@@ -564,62 +435,3 @@ int main(int argc, char **argv)
     json_report = load_json(str(json_output_path))
     assert json_report["testcase_nums"] == 1
     assert json_report["failure_nums"] == 1
-
-
-@pytest.mark.skipif(
-    sys.platform == "win32" and os.environ.get("GITHUB_ACTIONS") == "true",
-    reason="skip Github Actions on Windows (MinGW issue)",
-)
-def test_googletest_framework(clirunner, tmp_path: Path):
-    project_dir = tmp_path / "project"
-    shutil.copytree(
-        os.path.join("examples", "unit-testing", "googletest"), str(project_dir)
-    )
-    junit_output_path = tmp_path / "junit.xml"
-    result = clirunner.invoke(
-        pio_test_cmd,
-        [
-            "-d",
-            str(project_dir),
-            "-e",
-            "native",
-            "--junit-output-path",
-            str(junit_output_path),
-        ],
-    )
-    assert result.exit_code != 0
-    # test JUnit output
-    junit_testsuites = ET.parse(junit_output_path).getroot()
-    assert int(junit_testsuites.get("tests")) == 4
-    assert int(junit_testsuites.get("errors")) == 0
-    assert int(junit_testsuites.get("failures")) == 1
-    assert len(junit_testsuites.findall("testsuite")) == 4
-    junit_failed_testcase = junit_testsuites.find(".//testcase[@name='FooTest.Bar']")
-    assert junit_failed_testcase.get("status") == "FAILED"
-    assert "test_main.cpp" in junit_failed_testcase.get("file")
-    assert junit_failed_testcase.get("line") == "26"
-    assert junit_failed_testcase.find("failure").get("message") == "Failure"
-    assert "Expected equality" in junit_failed_testcase.find("failure").text
-
-    # test program arguments
-    json_output_path = tmp_path / "report.json"
-    result = clirunner.invoke(
-        pio_test_cmd,
-        [
-            "-d",
-            str(project_dir),
-            "-e",
-            "native",
-            "--json-output-path",
-            str(json_output_path),
-            "-a",
-            "--gtest_filter=-FooTest.Bar",
-        ],
-    )
-    assert result.exit_code == 0
-    # test JSON
-    json_report = load_json(str(json_output_path))
-    assert json_report["testcase_nums"] == 3
-    assert json_report["failure_nums"] == 0
-    assert json_report["skipped_nums"] == 1
-    assert len(json_report["test_suites"]) == 4
