@@ -24,6 +24,7 @@ from platformio.package.meta import (
     PackageSpec,
     PackageType,
 )
+from platformio.package.vcsclient import VCSClientFactory
 
 
 def test_outdated_result():
@@ -142,6 +143,21 @@ def test_spec_vcs_urls():
     assert PackageSpec("https://gitlab.com/username/reponame") == PackageSpec(
         name="reponame", uri="git+https://gitlab.com/username/reponame"
     )
+    assert PackageSpec("https://gitlab.com/username/reponame/-/tree/main") == (
+        PackageSpec(
+            name="reponame",
+            uri="git+https://gitlab.com/username/reponame/-/tree/main",
+        )
+    )
+    assert PackageSpec("https://bitbucket.org/username/reponame/src/main") == (
+        PackageSpec(
+            name="reponame",
+            uri="git+https://bitbucket.org/username/reponame/src/main",
+        )
+    )
+    assert PackageSpec(
+        "https://bitbucket.org/username/reponame/src/main/subdir"
+    ).name == "reponame"
     assert PackageSpec(
         "wolfSSL=https://os.mbed.com/users/wolfSSL/code/wolfSSL/"
     ) == PackageSpec(
@@ -181,6 +197,16 @@ def test_spec_vcs_urls():
         owner="platformio",
         name="external-repo",
         uri="git+https://github.com/platformio/platformio-core",
+    )
+
+
+def test_parse_browse_url_decodes_ref():
+    assert VCSClientFactory._parse_browse_url(
+        "https://gitlab.com/username/reponame/-/tree/feature%2Fnew"
+    ) == (
+        "https://gitlab.com/username/reponame",
+        "feature/new",
+        None,
     )
 
 
