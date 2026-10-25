@@ -1,22 +1,93 @@
-Contributing
-------------
+# Contributing
 
-To get started, <a href="https://cla-assistant.io/platformio/platformio-core">sign the Contributor License Agreement</a>.
+**Any contribution helps our team and makes pioarduino better for the entire community!**
 
-1. Fork the repository on GitHub
-2. Clone repository `git clone --recursive https://github.com/YourGithubUsername/platformio-core.git`
-3. Run `pip install tox`
-4. Go to the root of the PlatformIO Core project where `tox.ini` is located (``cd platformio-core``) and run `tox -e py39`.
-   You can replace `py39` with your own Python version. For example, `py311` means Python 3.11.
-5. Activate current development environment:
+Everybody is welcome and invited to contribute to the pioarduino Project by:
 
-   * Windows: `.tox\py39\Scripts\activate`
-   * Bash/ZSH: `source .tox/py39/bin/activate`
-   * Fish: `source .tox/py39/bin/activate.fish`
+* Testing newly released features and reporting issues.
+* Providing Pull Requests (Features, Proof of Concepts or Fixes)
+* Contributing missing documentation for features
 
-6. Make changes to code, documentation, etc.
-7. Lint source code `make before-commit`
-8. Run the tests `make test`
-9. Build documentation `tox -e docs` (creates a directory _build under docs where you can find the html)
-10. Commit changes to your forked repository
-11. Submit a Pull Request on GitHub
+This document describes rules that are in effect for this repository, meant for handling issues by contributors in the issue tracker and PRs.
+
+## Opening New Issues
+
+**Issue tracker is NOT a general discussion forum!**
+
+1. Opening an issue means that a problem exists in the code and should be addressed by the project contributors.
+2. When opening an issue, provide as much info as possible. With insufficient info about the provided issue, the issue may be closed.
+3. Questions of type "How do I..." or "Can you please help me with..." WILL NOT be handled here. All issues of this type will be closed with a simple reference to this contributing policy.
+4. Issues about topics already handled in the documentation will be closed in a similar manner.
+5. Issues for unmerged PRs will be closed. If there is an issue with a PR, the explanation should be added to the PR itself.
+6. Issues with accompanied investigation that shows the root of the problem should be given priority.
+7. Duplicate issues will be closed.
+
+## Triaging of Issues/PRs
+
+1. Any contributor to the project can participate in the triaging process, if he/she/them chooses to do so.
+2. An issue that needs to be closed, either due to not complying with this policy, or for other reasons, should be closed by a contributor.
+3. Issues that are accepted should be marked with appropriate labels.
+4. Issues that could impact functionality for many users should be considered severe.
+5. Issues with feature requests should be discussed for viability/desirability.
+6. Feature requests or changes that are meant to address a very specific/limited use case, may be denied, or may be required to be redesigned, generalized, or simplified.
+7. Feature requests that are not accompanied by a PR:
+    * could be closed immediately (denied).
+    * could be closed after some predetermined period of time (left as candidate for somebody to pick up).
+8. In some cases, feedback may be requested from the issue reporter, either as additional info for clarification, additional testing, or other. If no feedback is provided, the issue may be closed by a contributor or after 30 days by the STALE bot.
+
+## Pull Requests
+
+A Pull Request (PR) is the process where code modifications are managed in GitHub.
+
+The process is straight-forward.
+
+- Read [How to get faster PR reviews](https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#best-practices-for-faster-reviews) by Kubernetes (but skip step 0)
+- Fork the [pioarduino/platformio-core](https://github.com/pioarduino/platformio-core) repository.
+- Clone repository: `git clone --recursive https://github.com/YourGithubUsername/platformio-core.git`
+- Run `pip install tox`
+- Go to the root of the project and run `tox -e py39` (replace `py39` with your Python version, e.g. `py311` for Python 3.11)
+- Activate current development environment:
+  - Windows: `.tox\py39\Scripts\activate`
+  - Bash/ZSH: `source .tox/py39/bin/activate`
+  - Fish: `source .tox/py39/bin/activate.fish`
+- Write/Change the code in your Fork for a new feature, bug fix, optimization, etc.
+- Ensure tests work.
+- Create a Pull Request against the [**develop**](https://github.com/pioarduino/platformio-core/tree/develop) branch of pioarduino.
+
+1. All pull requests must be done against the develop branch.
+2. Only relevant files should be touched (also beware if your editor has auto-formatting enabled).
+3. Only one feature/fix should be added per PR.
+4. PRs that don't compile (fail in CI Tests) or cause coding errors will not be merged. Same goes for PRs raised against an older commit in develop — you might need to rebase and resolve conflicts.
+5. All pull requests should undergo peer review by at least one contributor other than the creator, except for the owner.
+6. All pull requests should consider updates to the documentation.
+7. Pull requests that address an outstanding issue, particularly one deemed severe, should be given priority.
+8. If a PR is accepted, it should undergo review and be updated based on feedback provided, then merged.
+9. By submitting a PR, you need to use the provided PR template and check all boxes, performing the required tasks and accepting the CLA.
+10. Pull requests that don't meet the above will be denied and closed.
+
+---
+
+## Contributor License Agreement (CLA)
+
+```
+By making a contribution to this project, I certify that:
+
+(a) The contribution was created in whole or in part by me and I have the right
+    to submit it under the Apache 2.0 license; or
+
+(b) The contribution is based upon previous work that, to the best of my knowledge,
+    is covered under an appropriate open source license and I have the right under
+    that license to submit that work with modifications, whether created in whole or
+    in part by me, under the Apache 2.0 license; or
+
+(c) The contribution was provided directly to me by some other person who certified
+    (a), (b) or (c) and I have not modified it.
+
+(d) I understand and agree that this project and the contribution are public and that
+    a record of the contribution (including all personal information I submit with it)
+    is maintained indefinitely and may be redistributed consistent with this project
+    or the open source license(s) involved.
+```
+
+To accept the CLA it is required to put a x between [ ] on `[ ] I accept the CLA` in the PR template when submitting it.
+

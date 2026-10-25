@@ -14,6 +14,7 @@
 
 # pylint: disable=unused-argument
 
+import json
 import logging
 import os
 import time
@@ -33,6 +34,14 @@ from platformio.package.manager.platform import PlatformPackageManager
 from platformio.package.manager.tool import ToolPackageManager
 from platformio.package.meta import PackageSpec
 from platformio.package.pack import PackagePacker
+from platformio.project.config import ProjectConfig
+
+
+@pytest.fixture(name="reset_project_config_cache")
+def _project_config_cache():
+    ProjectConfig._instances.clear()  # pylint: disable=protected-access
+    yield
+    ProjectConfig._instances.clear()  # pylint: disable=protected-access
 
 
 def test_download(isolated_pio_core):
@@ -313,6 +322,272 @@ def test_symlink(tmp_path: Path):
     assert ["Installed"] == [pkg.metadata.name for pkg in lm.get_installed()]
 
 
+def test_symlink_no_reinstall(tmp_path: Path, reset_project_config_cache):
+    external_pkg_dir = tmp_path / "libs" / "LibA"
+    external_pkg_dir.mkdir(parents=True)
+    (external_pkg_dir / "library.properties").write_text("name=DifferentName\nversion=1.0.0\n")
+
+    proj_dir = tmp_path / "app" / "proj"
+    proj_dir.mkdir(parents=True)
+    storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
+    storage_dir.mkdir(parents=True)
+
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(proj_dir))
+
+    lm = LibraryPackageManager(str(storage_dir))
+    spec = "symlink://../../libs/LibA"
+    pkg = lm.install(spec)
+    assert pkg
+    link_file = storage_dir / "LibA.pio-link"
+    assert link_file.is_file()
+
+    # Verify get_package matches despite name difference in manifest
+    assert lm.get_package(spec) is not None
+
+    # Calling install again should not rewrite/modify the link file
+    mtime_before = link_file.stat().st_mtime_ns
+    pkg2 = lm.install_symlink(lm.ensure_spec(spec))
+    mtime_after = link_file.stat().st_mtime_ns
+    assert pkg2 is not None
+    assert mtime_before == mtime_after
+
+
+def test_symlink_uses_install_target_when_cwd_target_exists(
+    tmp_path: Path, monkeypatch, reset_project_config_cache
+):
+    working_dir = tmp_path / "working"
+    project_dir = tmp_path / "project"
+    relative_target = Path("libs/LocalLib")
+    working_target = working_dir / relative_target
+    project_target = project_dir / relative_target
+    working_target.mkdir(parents=True)
+    project_target.mkdir(parents=True)
+    monkeypatch.chdir(working_dir)
+
+    storage_dir = project_dir / ".pio" / "libdeps" / "debug"
+    storage_dir.mkdir(parents=True)
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(project_dir))
+
+    lm = LibraryPackageManager(str(storage_dir))
+    pkg = lm.install(f"symlink://{relative_target.as_posix()}")
+
+    assert pkg is not None
+    assert Path(pkg.path) == project_target.resolve()
+
+
+def test_symlink_stores_target_without_resolving_filesystem_symlink(tmp_path: Path):
+    real_target = tmp_path / "real"
+    real_target.mkdir()
+    symlink_target = tmp_path / "linked"
+    try:
+        symlink_target.symlink_to(real_target, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"Directory symlinks are unavailable: {exc}")
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    lm = LibraryPackageManager(str(storage_dir))
+    pkg = lm.install(f"symlink://{symlink_target}")
+
+    assert pkg is not None
+    resolved_target, _ = lm.resolve_symlink(str(storage_dir / "linked.pio-link"))
+    assert Path(resolved_target) == symlink_target
+
+
+def test_symlink_migrates_link_when_alias_changes(tmp_path: Path):
+    real_target = tmp_path / "real"
+    real_target.mkdir()
+    first_alias = tmp_path / "first-alias"
+    second_alias = tmp_path / "second-alias"
+    try:
+        first_alias.symlink_to(real_target, target_is_directory=True)
+        second_alias.symlink_to(real_target, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"Directory symlinks are unavailable: {exc}")
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    lm = LibraryPackageManager(str(storage_dir))
+
+    assert lm.install(f"symlink://{first_alias}") is not None
+    old_link = storage_dir / "first-alias.pio-link"
+    new_link = storage_dir / "second-alias.pio-link"
+    assert old_link.is_file()
+
+    pkg = lm.install(f"symlink://{second_alias}")
+
+    assert pkg is not None
+    assert not old_link.exists()
+    assert new_link.is_file()
+    assert [item.metadata.spec.uri for item in lm.get_installed()] == [
+        f"symlink://{second_alias}"
+    ]
+
+    lm.uninstall(f"symlink://{second_alias}")
+    assert not new_link.exists()
+    assert real_target.is_dir()
+
+
+def test_symlink_without_manifest(tmp_path: Path):
+    external_pkg_dir = tmp_path / "libs" / "NoManifestLib"
+    external_pkg_dir.mkdir(parents=True)
+    (external_pkg_dir / "NoManifestLib.h").write_text("#pragma once\n")
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir(parents=True)
+
+    lm = LibraryPackageManager(str(storage_dir))
+    spec = f"symlink://{external_pkg_dir}"
+    pkg = lm.install(spec)
+    assert pkg is not None
+    assert pkg.metadata.name == "NoManifestLib"
+    assert lm.get_package(spec) is not None
+
+
+def test_symlink_path_variations(tmp_path: Path, reset_project_config_cache):
+    external_pkg_dir = tmp_path / "libs" / "LibB"
+    external_pkg_dir.mkdir(parents=True)
+    (external_pkg_dir / "library.json").write_text('{"name":"LibB","version":"1.0.0"}')
+
+    proj_dir = tmp_path / "app" / "proj"
+    proj_dir.mkdir(parents=True)
+    storage_dir = proj_dir / ".pio" / "libdeps" / "debug"
+    storage_dir.mkdir(parents=True)
+
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(proj_dir))
+
+    lm = LibraryPackageManager(str(storage_dir))
+    # Install with forward slashes
+    spec1 = "symlink://../../libs/LibB"
+    pkg = lm.install(spec1)
+    assert pkg is not None
+    pkg.dump_meta()
+
+    # Look up with backslashes
+    spec_bs = "symlink://..\\..\\libs\\LibB"
+    assert lm.get_package(spec_bs) is not None
+    # Look up with equivalent backslash path requiring path resolution
+    spec_bs_dot = "symlink://.\\..\\..\\libs\\LibB"
+    assert lm.get_package(spec_bs_dot) is not None
+
+    # Updating the URI should retain the resolved target and store the new URI.
+    link_file = storage_dir / "LibB.pio-link"
+    pkg2 = lm.install(spec_bs)
+    assert pkg2 is not None
+    assert pkg2.metadata.spec.uri == spec_bs
+    assert fs.load_json(str(link_file))["spec"]["uri"] == spec_bs
+
+    # Reinstalling with the same URI should not rewrite the link file.
+    mtime_before = link_file.stat().st_mtime_ns
+    assert lm.install_symlink(lm.ensure_spec(spec_bs)) is not None
+    assert link_file.stat().st_mtime_ns == mtime_before
+
+    # The updated URI can remove the link.
+    lm.uninstall(spec_bs)
+    assert not link_file.exists()
+
+
+def test_symlink_resolve_resolved_target_precedence_and_fallback(
+    tmp_path: Path, monkeypatch, reset_project_config_cache
+):
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    lm = LibraryPackageManager(str(storage_dir))
+
+    cwd_dir = tmp_path / "cwd"
+    cwd_dir.mkdir()
+    (cwd_dir / "rel_lib").mkdir()
+    project_dir = tmp_path / "project"
+    (project_dir / "rel_lib").mkdir(parents=True)
+    monkeypatch.chdir(cwd_dir)
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(project_dir))
+
+    # Link with resolved_target pointing to non-existent dir should return (None, spec)
+    # without falling back to cwd
+    link_path = storage_dir / "test1.pio-link"
+    link_path.write_text(
+        json.dumps(
+            {
+                "cwd": str(cwd_dir),
+                "spec": {"name": "test1", "uri": "symlink://rel_lib"},
+                "resolved_target": str(tmp_path / "deleted_dir"),
+            }
+        )
+    )
+    resolved_path, spec = lm.resolve_symlink(str(link_path))
+    assert resolved_path is None
+    assert spec.name == "test1"
+
+    # Legacy links use the recorded cwd first, then the project directory.
+    legacy_link_path = storage_dir / "test2.pio-link"
+    legacy_link_path.write_text(
+        json.dumps(
+            {
+                "cwd": str(cwd_dir),
+                "spec": {"name": "test2", "uri": "symlink://rel_lib"},
+            }
+        )
+    )
+    resolved_path, spec = lm.resolve_symlink(str(legacy_link_path))
+    assert resolved_path == str(cwd_dir / "rel_lib")
+    assert spec.name == "test2"
+
+    def unavailable_config():
+        raise OSError("project configuration unavailable")
+
+    monkeypatch.setattr(ProjectConfig, "get_instance", unavailable_config)
+    resolved_path, _ = lm.resolve_symlink(str(legacy_link_path))
+    assert resolved_path == str(cwd_dir / "rel_lib")
+
+
+def test_symlink_spec_does_not_match_cwd_target(
+    tmp_path: Path, monkeypatch, reset_project_config_cache
+):
+    cwd_dir = tmp_path / "cwd"
+    project_dir = tmp_path / "project"
+    cwd_target = cwd_dir / "rel_lib"
+    cwd_target.mkdir(parents=True)
+    (project_dir / "rel_lib").mkdir(parents=True)
+    monkeypatch.chdir(cwd_dir)
+
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(project_dir))
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    link_path = storage_dir / "rel_lib.pio-link"
+    link_path.write_text(
+        json.dumps(
+            {
+                "spec": {"name": "rel_lib", "uri": "symlink://rel_lib"},
+                "resolved_target": str(cwd_target),
+            }
+        )
+    )
+
+    lm = LibraryPackageManager(str(storage_dir))
+    assert lm.get_package("symlink://rel_lib") is None
+
+
 def test_scripts(isolated_pio_core, tmp_path: Path):
     pkg_dir = tmp_path / "foo"
     scripts_dir = pkg_dir / "scripts"
@@ -579,12 +854,12 @@ def test_update_with_metadata(isolated_pio_core, tmpdir_factory):
     # test wanted
     outdated = lm.outdated(pkg, PackageSpec("ArduinoJson@~6"))
     assert str(outdated.current) == "6.19.4"
-    assert str(outdated.wanted) == "6.21.5"
+    assert str(outdated.wanted) == "6.21.6"
     assert outdated.latest > semantic_version.Version("6.16.0")
 
     # update to the wanted 6.x
     new_pkg = lm.update("ArduinoJson@^6", PackageSpec("ArduinoJson@^6"))
-    assert str(new_pkg.metadata.version) == "6.21.5"
+    assert str(new_pkg.metadata.version) == "6.21.6"
     # check that old version is removed
     assert len(lm.get_installed()) == 2
 

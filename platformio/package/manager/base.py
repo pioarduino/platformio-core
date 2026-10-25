@@ -281,32 +281,52 @@ class BasePackageManager(  # pylint: disable=too-many-public-methods,too-many-in
         # external "URL" mismatch
         if spec.external:
             # local/symlinked folder mismatch
-            check_conds = [
-                os.path.abspath(spec.uri) == os.path.abspath(pkg.path),
-                spec.uri.startswith("file://")
-                and os.path.abspath(pkg.path) == os.path.abspath(spec.uri[7:]),
-                spec.uri.startswith("symlink://")
-                and os.path.abspath(pkg.path) == os.path.abspath(spec.uri[10:]),
-            ]
-            if any(check_conds):
-                return True
-            if spec.uri != pkg.metadata.spec.uri:
-                return False
+            pkg_path = os.path.normcase(os.path.realpath(pkg.path))
+            check_conds = []
+            if spec.symlink:
+                check_conds.append(
+                    pkg_path
+                    == os.path.normcase(
+                        os.path.realpath(
+                            PackageManagerSymlinkMixin.resolve_symlink_target(
+                                spec.uri
+                            )
+                        )
+                    )
+                )
+            else:
+                check_conds.extend(
+                    [
+                        os.path.normcase(os.path.realpath(spec.uri)) == pkg_path,
+                        spec.uri.startswith("file://")
+                        and pkg_path
+                        == os.path.normcase(os.path.realpath(spec.uri[7:])),
+                    ]
+                )
+            if pkg.metadata and pkg.metadata.spec and pkg.metadata.spec.uri:
+                if not spec.symlink:
+                    norm_spec_uri = spec.uri.replace("\\", "/").rstrip("/")
+                    norm_pkg_uri = pkg.metadata.spec.uri.replace("\\", "/").rstrip("/")
+                    check_conds.append(norm_spec_uri == norm_pkg_uri)
+            return any(check_conds)
 
         # "owner" mismatch
-        elif spec.owner and not ci_strings_are_equal(
+        if spec.owner and not ci_strings_are_equal(
             spec.owner, pkg.metadata.spec.owner
         ):
             return False
 
         # "name" mismatch
-        elif not spec.id and not ci_strings_are_equal(spec.name, pkg.metadata.name):
+        if not spec.id and not ci_strings_are_equal(spec.name, pkg.metadata.name):
             return False
 
         return True
 
     def get_pkg_dependencies(self, pkg):
-        return self.load_manifest(pkg).get("dependencies")
+        try:
+            return self.load_manifest(pkg).get("dependencies")
+        except MissingPackageManifestError:
+            return None
 
     @staticmethod
     def dependency_to_spec(dependency):

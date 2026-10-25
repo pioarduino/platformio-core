@@ -12,12 +12,38 @@ Release Notes
 
 .. _release_notes_6:
 
-PlatformIO Core 6
------------------
+pioarduino Core 6 (based on PlatformIO Core 6)
+-----------------------------------------------
 
 Unlock the true potential of embedded software development with
-PlatformIO's collaborative ecosystem, embracing declarative principles,
+a collaborative ecosystem, embracing declarative principles,
 test-driven methodologies, and modern toolchains for unrivaled success.
+
+6.2.0 (2026-09-05)
+~~~~~~~~~~~~~~~~~~
+
+* Dropped support for Python 3.6, 3.7 and 3.8, requiring Python 3.9 or newer to run PlatformIO Core (`issue #5414 <https://github.com/platformio/platformio-core/issues/5414>`_)
+* Removed support for static code analysis via PVS-Studio following its deprecation by the vendor (`pull #5360 <https://github.com/platformio/platformio-core/pull/5360>`_)
+* Added a new ``-p, --port`` option to the `pio run <https://docs.platformio.org/en/latest/core/userguide/cmd_run.html#cmdoption-pio-run-p>`__ command, allowing users to set both ``upload_port`` and ``monitor_port`` simultaneously for a more streamlined workflow (`pull #5429 <https://github.com/platformio/platformio-core/pull/5429>`_)
+* Added an option to `disable the 99-platformio-udev.rules <https://docs.platformio.org/en/latest/core/userguide/cmd_settings.html#disable_udev_rules_check>`__ check, providing greater flexibility in environments where system-level udev configuration is not required (`pull #5204 <https://github.com/platformio/platformio-core/pull/5204>`_)
+* Introduced the `PLATFORMIO_DISABLE_UPGRADE_CHECK <https://docs.platformio.org/en/latest/envvars.html#envvar-PLATFORMIO_DISABLE_UPGRADE_CHECK>`__ environment variable, allowing users to disable upgrade availability checks when needed (`pull #5428 <https://github.com/platformio/platformio-core/pull/5428>`_)
+* Upgraded the build engine to the latest version of SCons (4.11.1) to improve build performance, reliability, and compatibility with other tools and systems (`release notes <https://github.com/SCons/scons/releases/tag/4.11.1>`__)
+* Increased the maximum length of dependency version specifications to support long package URLs in project manifests (`issue #5459 <https://github.com/platformio/platformio-core/issues/5459>`_)
+* Handled Windows path length limitations during package extraction by raising a descriptive error with instructions to `enable long paths <https://docs.platformio.org/en/latest/faq/troubleshooting.html#package-manager>`__ when a "FileNotFoundError" occurs (`issue #5500 <https://github.com/platformio/platformio-core/issues/5500>`_)
+* Omitted skipped environments and test suites from the |UNITTESTING| summary output when filtering with ``-e`` or ``-f`` options (`issue #5402 <https://github.com/platformio/platformio-core/issues/5402>`_)
+* Fixed an issue that could cause an infinite retry loop when a cached package mirror redirect repeatedly failed (`pull #5435 <https://github.com/platformio/platformio-core/pull/5435>`_)
+* Fixed an issue where the library integrity metadata was not invalidated after correcting invalid version requirements (`issue #5232 <https://github.com/platformio/platformio-core/issues/5232>`_)
+* Fixed an issue where |UNITTESTING| failed on Windows due to improper handling of ``Serial.end()`` (`issue #5359 <https://github.com/platformio/platformio-core/issues/5359>`_)
+* Fixed an issue with floating-point precision in duration formatting that caused incorrect millisecond reporting (`issue #5424 <https://github.com/platformio/platformio-core/issues/5424>`_)
+* Fixed an issue where the test suite status was incorrectly hardcoded as PASSED (`issue #5183 <https://github.com/platformio/platformio-core/issues/5183>`_)
+* Fixed an issue where using a relative path with the ``-d, --project-dir`` option caused `pio device monitor <https://docs.platformio.org/en/latest/core/userguide/device/cmd_monitor.html>`__ to fail with a "FileNotFoundError" (`pull #5470 <https://github.com/platformio/platformio-core/pull/5470>`_)
+* Fixed compatibility with ``pipx``- and ``uvx``-managed environments by ensuring the required ``pip`` dependency is available when installing Python-based tool packages (`issue #5305 <https://github.com/platformio/platformio-core/issues/5305>`_)
+* Fixed an issue where debug flags with level specifications (such as ``-g2``) were passed to the standalone assembler, causing fatal compilation errors on ``.s`` files (`issue #5005 <https://github.com/platformio/platformio-core/issues/5005>`_)
+* Fixed a security vulnerability where ZIP archives containing relative path traversal entries (e.g., ``../``) could alter permissions or timestamps of files outside the destination directory (`pull #5499 <https://github.com/platformio/platformio-core/pull/5499>`_)
+* Fixed an unhandled ``termios`` exception when running `pio device monitor <https://docs.platformio.org/en/latest/core/userguide/device/cmd_monitor.html>`__ with redirected or non-TTY ``stdin``, replacing the traceback with a clear user error (`pull #5503 <https://github.com/platformio/platformio-core/pull/5503>`_)
+* Fixed an issue with improper static analysis report if project is analyzed in verbose mode (`issue #4943 <https://github.com/platformio/platformio-core/issues/4943>`_)
+* Fixed an issue where the test framework library was unintentionally removed from the project dependencies when building a project outside of testing mode (`issue #5388 <https://github.com/platformio/platformio-core/issues/5388>`_)
+* Fixed an issue where relative header paths provided via ``-include`` build flags were not resolved to absolute paths in ``c_cpp_properties.json``, causing IntelliSense errors (`issue #5449 <https://github.com/platformio/platformio-core/issues/5449>`_)
 
 6.1.19 (2026-02-04)
 ~~~~~~~~~~~~~~~~~~~
@@ -105,13 +131,13 @@ test-driven methodologies, and modern toolchains for unrivaled success.
 6.1.11 (2023-08-31)
 ~~~~~~~~~~~~~~~~~~~
 
-* Resolved a possible issue that may cause generated projects for `PlatformIO IDE for VSCode <https://docs.platformio.org/en/latest/integration/ide/vscode.html>`__ to fail to launch a debug session because of a missing "objdump" binary when GDB is not part of the toolchain package
+* Resolved a possible issue that may cause generated projects for `pioarduino IDE for VS Code <https://github.com/pioarduino/pioarduino-vscode-ide>`__ to fail to launch a debug session because of a missing "objdump" binary when GDB is not part of the toolchain package
 * Resolved a regression issue that resulted in the malfunction of the Memory Inspection feature within |PIOHOME|
 
 6.1.10 (2023-08-11)
 ~~~~~~~~~~~~~~~~~~~
 
-* Resolved an issue that caused generated projects for `PlatformIO IDE for VSCode <https://docs.platformio.org/en/latest/integration/ide/vscode.html>`__ to break when the ``-iprefix`` compiler flag was used
+* Resolved an issue that caused generated projects for `pioarduino IDE for VS Code <https://github.com/pioarduino/pioarduino-vscode-ide>`__ to break when the ``-iprefix`` compiler flag was used
 * Resolved an issue encountered while utilizing the `pio pkg exec <https://docs.platformio.org/en/latest/core/userguide/pkg/cmd_exec.html>`__ command on the Windows platform to execute Python scripts from a package
 * Implemented a crucial improvement to the `pio run <https://docs.platformio.org/en/latest/core/userguide/cmd_run.html>`__ command, guaranteeing that the ``monitor`` target is not executed if any of the preceding targets, such as ``upload``, encounter failures
 * `Cppcheck <https://docs.platformio.org/en/latest/plus/check-tools/cppcheck.html>`__ v2.11 with new checks, CLI commands and various analysis improvements
@@ -341,7 +367,6 @@ Please check the `Migration guide from 5.x to 6.0 <https://docs.platformio.org/e
   - Updated analysis tools:
 
     * `Cppcheck <https://docs.platformio.org/en/latest/plus/check-tools/cppcheck.html>`__ v2.7 with various checker improvements and fixed false positives
-    * `PVS-Studio <https://docs.platformio.org/en/latest/plus/check-tools/pvs-studio.html>`__ v7.18 with improved and updated semantic analysis system
 
   - Added support for the custom `Clang-Tidy <https://docs.platformio.org/en/latest/plus/check-tools/clang-tidy.html>`__ configuration file (`issue #4186 <https://github.com/platformio/platformio-core/issues/4186>`_)
   - Added ability to override a tool version using the `platform_packages <https://docs.platformio.org/en/latest/projectconf/section_env_platform.html#platform-packages>`__ option (`issue #3798 <https://github.com/platformio/platformio-core/issues/3798>`_)
@@ -376,34 +401,34 @@ Please check the `Migration guide from 5.x to 6.0 <https://docs.platformio.org/e
 
 .. _release_notes_5:
 
-PlatformIO Core 5
------------------
+Upstream PlatformIO Core 5
+--------------------------
 
 See `PlatformIO Core 5.0 history <https://github.com/platformio/platformio-core/blob/v5.2.5/HISTORY.rst>`__.
 
 .. _release_notes_4:
 
-PlatformIO Core 4
------------------
+Upstream PlatformIO Core 4
+--------------------------
 
 See `PlatformIO Core 4.0 history <https://github.com/platformio/platformio-core/blob/v4.3.4/HISTORY.rst>`__.
 
-PlatformIO Core 3
------------------
+Upstream PlatformIO Core 3
+--------------------------
 
 See `PlatformIO Core 3.0 history <https://github.com/platformio/platformio-core/blob/v3.6.7/HISTORY.rst>`__.
 
-PlatformIO Core 2
------------------
+Upstream PlatformIO Core 2
+--------------------------
 
 See `PlatformIO Core 2.0 history <https://github.com/platformio/platformio-core/blob/v2.11.2/HISTORY.rst>`__.
 
-PlatformIO Core 1
------------------
+Upstream PlatformIO Core 1
+--------------------------
 
 See `PlatformIO Core 1.0 history <https://github.com/platformio/platformio-core/blob/v1.5.0/HISTORY.rst>`__.
 
-PlatformIO Core Preview
------------------------
+Upstream PlatformIO Core Preview
+--------------------------------
 
 See `PlatformIO Core Preview history <https://github.com/platformio/platformio-core/blob/v0.10.2/HISTORY.rst>`__.
