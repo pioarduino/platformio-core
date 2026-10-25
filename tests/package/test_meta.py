@@ -201,7 +201,8 @@ def test_spec_vcs_urls():
 
 
 def test_parse_browse_url_decodes_ref():
-    assert VCSClientFactory._parse_browse_url(
+    # Test the URL parser directly without requiring an installed VCS client.
+    assert VCSClientFactory._parse_browse_url(  # pylint: disable=protected-access
         "https://gitlab.com/username/reponame/-/tree/feature%2Fnew"
     ) == (
         "https://gitlab.com/username/reponame",
