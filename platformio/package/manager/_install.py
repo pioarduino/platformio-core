@@ -188,56 +188,57 @@ class PackageManagerInstallMixin:
             return self.install_symlink(spec)
 
         tmp_dir = tempfile.mkdtemp(prefix="pkg-installing-", dir=self.get_tmp_dir())
-        vcs = None
         try:
-            if uri.startswith("file://"):
-                _uri = uri[7:]
-                if os.path.isfile(_uri):
-                    self.unpack(_uri, tmp_dir)
-                elif os.path.isdir(_uri):
-                    fs.rmtree(tmp_dir)
-                    shutil.copytree(_uri, tmp_dir, symlinks=True)
-                else:
-                    click.secho(
-                        "Warning! Library not found at %s, skipping..." % _uri,
-                        fg="yellow",
-                    )
-                    return None
-            elif uri.startswith(("http://", "https://")):
-                dl_path = self.download(uri, checksum)
-                assert os.path.isfile(dl_path)
-                self.unpack(dl_path, tmp_dir)
-            else:
-                vcs = VCSClientFactory.new(tmp_dir, uri)
-                assert vcs.export()
-
-            pkg_dir = tmp_dir
-            if vcs and vcs.subdir:
-                pkg_dir = os.path.realpath(os.path.join(tmp_dir, vcs.subdir))
-                if not pkg_dir.startswith(os.path.realpath(tmp_dir) + os.sep):
-                    raise PackageException(
-                        "Invalid subdirectory '%s'" % vcs.subdir
-                    )
-                if not os.path.isdir(pkg_dir):
-                    raise PackageException(
-                        "Subdirectory '%s' not found in the repository" % vcs.subdir
-                    )
-
-            root_dir = self.find_pkg_root(pkg_dir, spec)
-            pkg_item = PackageItem(
-                root_dir,
-                self.build_metadata(
-                    root_dir, spec, vcs.get_current_revision() if vcs else None
-                ),
-            )
-            pkg_item.dump_meta()
-            return self._install_tmp_pkg(pkg_item)
+            return self._install_from_uri_tmp(uri, spec, checksum, tmp_dir)
         finally:
             if os.path.isdir(tmp_dir):
                 try:
                     fs.rmtree(tmp_dir)
                 except:  # pylint: disable=bare-except
                     pass
+
+    def _install_from_uri_tmp(self, uri, spec, checksum, tmp_dir):
+        vcs = None
+        if uri.startswith("file://"):
+            _uri = uri[7:]
+            if os.path.isfile(_uri):
+                self.unpack(_uri, tmp_dir)
+            elif os.path.isdir(_uri):
+                fs.rmtree(tmp_dir)
+                shutil.copytree(_uri, tmp_dir, symlinks=True)
+            else:
+                click.secho(
+                    "Warning! Library not found at %s, skipping..." % _uri,
+                    fg="yellow",
+                )
+                return None
+        elif uri.startswith(("http://", "https://")):
+            dl_path = self.download(uri, checksum)
+            assert os.path.isfile(dl_path)
+            self.unpack(dl_path, tmp_dir)
+        else:
+            vcs = VCSClientFactory.new(tmp_dir, uri)
+            assert vcs.export()
+
+        pkg_dir = tmp_dir
+        if vcs and vcs.subdir:
+            pkg_dir = os.path.realpath(os.path.join(tmp_dir, vcs.subdir))
+            if not pkg_dir.startswith(os.path.realpath(tmp_dir) + os.sep):
+                raise PackageException("Invalid subdirectory '%s'" % vcs.subdir)
+            if not os.path.isdir(pkg_dir):
+                raise PackageException(
+                    "Subdirectory '%s' not found in the repository" % vcs.subdir
+                )
+
+        root_dir = self.find_pkg_root(pkg_dir, spec)
+        pkg_item = PackageItem(
+            root_dir,
+            self.build_metadata(
+                root_dir, spec, vcs.get_current_revision() if vcs else None
+            ),
+        )
+        pkg_item.dump_meta()
+        return self._install_tmp_pkg(pkg_item)
 
     def _install_tmp_pkg(self, tmp_pkg):
         assert isinstance(tmp_pkg, PackageItem)
