@@ -38,11 +38,13 @@ class PackageManagerSymlinkMixin:
         assert spec.symlink
         # Prefer the pre-resolved absolute target stored at install time.
         # Fall back to cwd + relative URI for older link files that lack it.
-        resolved_target = data.get("resolved_target")
-        if resolved_target:
-            resolved_target = os.path.abspath(resolved_target)
-            if os.path.isdir(resolved_target):
-                return (resolved_target, spec)
+        if "resolved_target" in data:
+            resolved_target = data.get("resolved_target")
+            if resolved_target:
+                resolved_target = os.path.abspath(resolved_target)
+                if os.path.isdir(resolved_target):
+                    return (resolved_target, spec)
+            return (None, spec)
         pkg_dir = spec.uri[10:].replace("\\", os.sep)
         if not os.path.isabs(pkg_dir):
             base_dir = data.get("cwd")

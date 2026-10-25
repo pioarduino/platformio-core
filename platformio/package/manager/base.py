@@ -298,7 +298,7 @@ class BasePackageManager(  # pylint: disable=too-many-public-methods,too-many-in
                 norm_pkg_uri = pkg.metadata.spec.uri.replace("\\", "/").rstrip("/")
                 check_conds.append(norm_spec_uri == norm_pkg_uri)
                 if spec.symlink and pkg.metadata.spec.symlink:
-                    target = spec.uri[10:]
+                    target = spec.uri[10:].replace("\\", os.sep)
                     if not os.path.isabs(target):
                         try:
                             target = os.path.join(

@@ -14,6 +14,7 @@
 
 # pylint: disable=unused-argument
 
+import json
 import logging
 import os
 import time
@@ -349,7 +350,7 @@ def test_symlink_no_reinstall(tmp_path: Path, reset_project_config_cache):
 
     # Calling install again should not rewrite/modify the link file
     mtime_before = link_file.stat().st_mtime_ns
-    pkg2 = lm.install(spec)
+    pkg2 = lm.install_symlink(lm.ensure_spec(spec))
     mtime_after = link_file.stat().st_mtime_ns
     assert pkg2 is not None
     assert mtime_before == mtime_after
@@ -477,6 +478,9 @@ def test_symlink_path_variations(tmp_path: Path, reset_project_config_cache):
     # Look up with backslashes
     spec_bs = "symlink://..\\..\\libs\\LibB"
     assert lm.get_package(spec_bs) is not None
+    # Look up with equivalent backslash path requiring path resolution
+    spec_bs_dot = "symlink://.\\..\\..\\libs\\LibB"
+    assert lm.get_package(spec_bs_dot) is not None
 
     # Updating the URI should retain the resolved target and store the new URI.
     link_file = storage_dir / "LibB.pio-link"
@@ -487,12 +491,55 @@ def test_symlink_path_variations(tmp_path: Path, reset_project_config_cache):
 
     # Reinstalling with the same URI should not rewrite the link file.
     mtime_before = link_file.stat().st_mtime_ns
-    assert lm.install(spec_bs) is not None
+    assert lm.install_symlink(lm.ensure_spec(spec_bs)) is not None
     assert link_file.stat().st_mtime_ns == mtime_before
 
     # The updated URI can remove the link.
     lm.uninstall(spec_bs)
     assert not link_file.exists()
+
+
+def test_symlink_resolve_resolved_target_precedence_and_fallback(
+    tmp_path: Path, monkeypatch
+):
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    lm = LibraryPackageManager(str(storage_dir))
+
+    cwd_dir = tmp_path / "cwd"
+    cwd_dir.mkdir()
+    (cwd_dir / "rel_lib").mkdir()
+    monkeypatch.chdir(cwd_dir)
+
+    # Link with resolved_target pointing to non-existent dir should return (None, spec)
+    # without falling back to cwd
+    link_path = storage_dir / "test1.pio-link"
+    link_path.write_text(
+        json.dumps(
+            {
+                "cwd": str(cwd_dir),
+                "spec": {"name": "test1", "uri": "symlink://rel_lib"},
+                "resolved_target": str(tmp_path / "deleted_dir"),
+            }
+        )
+    )
+    resolved_path, spec = lm.resolve_symlink(str(link_path))
+    assert resolved_path is None
+    assert spec.name == "test1"
+
+    # Legacy link without resolved_target key falls back to cwd
+    legacy_link_path = storage_dir / "test2.pio-link"
+    legacy_link_path.write_text(
+        json.dumps(
+            {
+                "cwd": str(cwd_dir),
+                "spec": {"name": "test2", "uri": "symlink://rel_lib"},
+            }
+        )
+    )
+    resolved_path, spec = lm.resolve_symlink(str(legacy_link_path))
+    assert resolved_path == str(cwd_dir / "rel_lib")
+    assert spec.name == "test2"
 
 
 def test_scripts(isolated_pio_core, tmp_path: Path):
