@@ -500,7 +500,7 @@ def test_symlink_path_variations(tmp_path: Path, reset_project_config_cache):
 
 
 def test_symlink_resolve_resolved_target_precedence_and_fallback(
-    tmp_path: Path, monkeypatch
+    tmp_path: Path, monkeypatch, reset_project_config_cache
 ):
     storage_dir = tmp_path / "storage"
     storage_dir.mkdir()
@@ -509,7 +509,14 @@ def test_symlink_resolve_resolved_target_precedence_and_fallback(
     cwd_dir = tmp_path / "cwd"
     cwd_dir.mkdir()
     (cwd_dir / "rel_lib").mkdir()
+    project_dir = tmp_path / "project"
+    (project_dir / "rel_lib").mkdir(parents=True)
     monkeypatch.chdir(cwd_dir)
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(project_dir))
 
     # Link with resolved_target pointing to non-existent dir should return (None, spec)
     # without falling back to cwd
@@ -527,7 +534,7 @@ def test_symlink_resolve_resolved_target_precedence_and_fallback(
     assert resolved_path is None
     assert spec.name == "test1"
 
-    # Legacy link without resolved_target key falls back to cwd
+    # Legacy links use the project directory, ignoring cwd saved by older versions.
     legacy_link_path = storage_dir / "test2.pio-link"
     legacy_link_path.write_text(
         json.dumps(
@@ -538,8 +545,47 @@ def test_symlink_resolve_resolved_target_precedence_and_fallback(
         )
     )
     resolved_path, spec = lm.resolve_symlink(str(legacy_link_path))
-    assert resolved_path == str(cwd_dir / "rel_lib")
+    assert resolved_path == str(project_dir / "rel_lib")
     assert spec.name == "test2"
+
+    def unavailable_config():
+        raise OSError("project configuration unavailable")
+
+    monkeypatch.setattr(ProjectConfig, "get_instance", unavailable_config)
+    resolved_path, _ = lm.resolve_symlink(str(legacy_link_path))
+    assert resolved_path == str(cwd_dir / "rel_lib")
+
+
+def test_symlink_spec_does_not_match_cwd_target(
+    tmp_path: Path, monkeypatch, reset_project_config_cache
+):
+    cwd_dir = tmp_path / "cwd"
+    project_dir = tmp_path / "project"
+    cwd_target = cwd_dir / "rel_lib"
+    cwd_target.mkdir(parents=True)
+    (project_dir / "rel_lib").mkdir(parents=True)
+    monkeypatch.chdir(cwd_dir)
+
+    cfg = ProjectConfig.get_instance()
+    cfg.enable_warnings = False
+    if not cfg.has_section("platformio"):
+        cfg.add_section("platformio")
+    cfg.set("platformio", "project_dir", str(project_dir))
+
+    storage_dir = tmp_path / "storage"
+    storage_dir.mkdir()
+    link_path = storage_dir / "rel_lib.pio-link"
+    link_path.write_text(
+        json.dumps(
+            {
+                "spec": {"name": "rel_lib", "uri": "symlink://rel_lib"},
+                "resolved_target": str(cwd_target),
+            }
+        )
+    )
+
+    lm = LibraryPackageManager(str(storage_dir))
+    assert lm.get_package("symlink://rel_lib") is None
 
 
 def test_scripts(isolated_pio_core, tmp_path: Path):

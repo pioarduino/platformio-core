@@ -40,8 +40,6 @@ from platformio.package.meta import (
     PackageType,
 )
 from platformio.proc import get_pythonexe_path
-from platformio.project.config import ProjectConfig
-from platformio.project.exception import ProjectError
 from platformio.project.helpers import get_project_cache_dir
 
 
@@ -283,36 +281,33 @@ class BasePackageManager(  # pylint: disable=too-many-public-methods,too-many-in
         # external "URL" mismatch
         if spec.external:
             # local/symlinked folder mismatch
-            check_conds = [
-                os.path.normcase(os.path.realpath(spec.uri))
-                == os.path.normcase(os.path.realpath(pkg.path)),
-                spec.uri.startswith("file://")
-                and os.path.normcase(os.path.realpath(pkg.path))
-                == os.path.normcase(os.path.realpath(spec.uri[7:])),
-                spec.uri.startswith("symlink://")
-                and os.path.normcase(os.path.realpath(pkg.path))
-                == os.path.normcase(os.path.realpath(spec.uri[10:])),
-            ]
-            if pkg.metadata and pkg.metadata.spec and pkg.metadata.spec.uri:
-                norm_spec_uri = spec.uri.replace("\\", "/").rstrip("/")
-                norm_pkg_uri = pkg.metadata.spec.uri.replace("\\", "/").rstrip("/")
-                check_conds.append(norm_spec_uri == norm_pkg_uri)
-                if spec.symlink and pkg.metadata.spec.symlink:
-                    target = spec.uri[10:].replace("\\", os.sep)
-                    if not os.path.isabs(target):
-                        try:
-                            target = os.path.join(
-                                ProjectConfig.get_instance().get(
-                                    "platformio", "project_dir"
-                                ),
-                                target,
+            pkg_path = os.path.normcase(os.path.realpath(pkg.path))
+            check_conds = []
+            if spec.symlink:
+                check_conds.append(
+                    pkg_path
+                    == os.path.normcase(
+                        os.path.realpath(
+                            PackageManagerSymlinkMixin.resolve_symlink_target(
+                                spec.uri
                             )
-                        except (OSError, ProjectError):
-                            target = os.path.join(os.getcwd(), target)
-                    check_conds.append(
-                        os.path.normcase(os.path.realpath(pkg.path))
-                        == os.path.normcase(os.path.realpath(target))
+                        )
                     )
+                )
+            else:
+                check_conds.extend(
+                    [
+                        os.path.normcase(os.path.realpath(spec.uri)) == pkg_path,
+                        spec.uri.startswith("file://")
+                        and pkg_path
+                        == os.path.normcase(os.path.realpath(spec.uri[7:])),
+                    ]
+                )
+            if pkg.metadata and pkg.metadata.spec and pkg.metadata.spec.uri:
+                if not spec.symlink:
+                    norm_spec_uri = spec.uri.replace("\\", "/").rstrip("/")
+                    norm_pkg_uri = pkg.metadata.spec.uri.replace("\\", "/").rstrip("/")
+                    check_conds.append(norm_spec_uri == norm_pkg_uri)
             return any(check_conds)
 
         # "owner" mismatch
