@@ -15,7 +15,7 @@
 import os
 import re
 import subprocess
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from platformio import proc
 from platformio.exception import UserSideException
@@ -39,6 +39,12 @@ class VCSClientFactory:
             remote_url = remote_url[len(type_) + 1 :]
         if "#" in remote_url:
             remote_url, tag = remote_url.rsplit("#", 1)
+
+        # Parse subdirectory from browse URLs (e.g., GitHub /tree/branch/subdir)
+        remote_url, browse_tag, subdir = VCSClientFactory._parse_browse_url(remote_url)
+        if browse_tag and not tag:
+            tag = browse_tag
+
         if not type_:
             raise VCSBaseException("VCS: Unknown repository type %s" % remote_url)
         try:
@@ -46,11 +52,57 @@ class VCSClientFactory:
                 src_dir, remote_url, tag, silent
             )
             assert isinstance(obj, VCSClientBase)
-            return obj
         except (KeyError, AssertionError) as exc:
             raise VCSBaseException(
                 "VCS: Unknown repository type %s" % remote_url
             ) from exc
+        obj.subdir = subdir
+        return obj
+
+    @staticmethod
+    def _parse_browse_url(remote_url):
+        """Parse subdirectory from VCS hosting browse URLs.
+
+        Supports single-level owner/repo paths:
+        - GitHub: https://github.com/owner/repo/tree/branch/subdir
+        - GitLab: https://gitlab.com/owner/repo/-/tree/branch/subdir
+          (nested subgroups like owner/group/repo are not supported)
+        - Bitbucket: https://bitbucket.org/owner/repo/src/branch/subdir
+
+        Returns (remote_url, tag, subdir) tuple.
+        """
+        parts = urlparse(remote_url)
+        path_parts = [p for p in parts.path.split("/") if p]
+
+        if len(path_parts) < 4:
+            return remote_url, None, None
+
+        owner, repo = path_parts[0], path_parts[1]
+        rest = path_parts[2:]
+
+        # Handle GitLab's /-/ prefix
+        if parts.netloc == "gitlab.com" and rest[0] == "-":
+            rest = rest[1:]
+
+        subdir_markers = {
+            "github.com": "tree",
+            "gitlab.com": "tree",
+            "bitbucket.org": "src",
+            "bitbucket.com": "src",
+        }
+
+        marker = subdir_markers.get(parts.netloc)
+        if not marker or not rest or rest[0] != marker or len(rest) < 2:
+            return remote_url, None, None
+
+        tag = rest[1]
+        subdir_parts = [unquote(s) for s in rest[2:]]
+        if any(s in ("", ".", "..") for s in subdir_parts):
+            return remote_url, None, None
+        subdir = "/".join(subdir_parts) if subdir_parts else None
+        base_url = "%s://%s/%s/%s" % (parts.scheme, parts.netloc, owner, repo)
+
+        return base_url, tag, subdir
 
 
 class VCSClientBase:
@@ -61,6 +113,7 @@ class VCSClientBase:
         self.remote_url = remote_url
         self.tag = tag
         self.silent = silent
+        self.subdir = None
         self.check_client()
 
     def check_client(self):
