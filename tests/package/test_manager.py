@@ -534,7 +534,7 @@ def test_symlink_resolve_resolved_target_precedence_and_fallback(
     assert resolved_path is None
     assert spec.name == "test1"
 
-    # Legacy links use the project directory, ignoring cwd saved by older versions.
+    # Legacy links use the recorded cwd first, then the project directory.
     legacy_link_path = storage_dir / "test2.pio-link"
     legacy_link_path.write_text(
         json.dumps(
@@ -545,7 +545,7 @@ def test_symlink_resolve_resolved_target_precedence_and_fallback(
         )
     )
     resolved_path, spec = lm.resolve_symlink(str(legacy_link_path))
-    assert resolved_path == str(project_dir / "rel_lib")
+    assert resolved_path == str(cwd_dir / "rel_lib")
     assert spec.name == "test2"
 
     def unavailable_config():

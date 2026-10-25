@@ -58,6 +58,13 @@ class PackageManagerSymlinkMixin:
                 if os.path.isdir(resolved_target):
                     return (resolved_target, spec)
             return (None, spec)
+        pkg_dir = spec.uri[10:]
+        if not os.path.isabs(pkg_dir) and data.get("cwd"):
+            cwd_pkg_dir = os.path.abspath(
+                os.path.normpath(os.path.join(data["cwd"], pkg_dir))
+            )
+            if os.path.isdir(cwd_pkg_dir):
+                return (cwd_pkg_dir, spec)
         pkg_dir = cls.resolve_symlink_target(spec.uri)
         return (pkg_dir if os.path.isdir(pkg_dir) else None, spec)
 
