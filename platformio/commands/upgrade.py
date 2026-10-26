@@ -52,7 +52,10 @@ def cli(dev, only_dependencies, verbose):
     click.secho("Please wait while upgrading PlatformIO Core ...", fg="yellow")
 
     python_exe = get_pythonexe_path()
-    to_develop = dev or not all(c.isdigit() for c in __version__ if c != ".")
+    to_develop = dev or any(
+        isinstance(part, str) and not re.fullmatch(r"post\d+", part)
+        for part in VERSION[3:]
+    )
     pkg_spec = DEVELOP_ZIP_URL if to_develop else "platformio"
 
     try:

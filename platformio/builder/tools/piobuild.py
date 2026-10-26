@@ -14,6 +14,7 @@
 
 import fnmatch
 import os
+import re
 import sys
 
 from SCons import Builder, Util  # pylint: disable=import-error
@@ -198,12 +199,63 @@ def ProcessProjectDeps(env):
         env.Exit(1)
 
 
+def _split_build_flag_tokens(raw):
+    tokens = []
+    i = 0
+    while i < len(raw):
+        if raw[i].isspace():
+            i += 1
+            continue
+        start = i
+        quote = None
+        while i < len(raw):
+            char = raw[i]
+            if quote:
+                if char == "\\" and quote == '"' and i + 1 < len(raw):
+                    i += 2
+                    continue
+                if char == quote:
+                    quote = None
+            elif char in ("'", '"'):
+                quote = char
+            elif char == "\\" and i + 1 < len(raw):
+                i += 2
+                continue
+            elif char.isspace():
+                break
+            i += 1
+        tokens.append((start, i, raw[start:i]))
+    return tokens
+
+
+def _normalize_undefine_flags(raw):
+    tokens = _split_build_flag_tokens(raw)
+    replacements = []
+    for index, (start, end, token) in enumerate(tokens):
+        if token == "-U" and index + 1 < len(tokens):
+            next_start, _, name = tokens[index + 1]
+            if not name.startswith("-"):
+                replacements.append((end, next_start, ""))
+        elif len(token) >= 2 and token[0] == token[-1] and token[0] in "'\"":
+            match = re.fullmatch(r"-U\s+((?!-)\S+)", token[1:-1])
+            if match:
+                replacements.append(
+                    (start, end, "%s-U%s%s" % (token[0], match.group(1), token[-1]))
+                )
+
+    for start, end, replacement in reversed(replacements):
+        raw = raw[:start] + replacement + raw[end:]
+    return raw
+
+
 def ParseFlagsExtended(env, flags):  # pylint: disable=too-many-branches
     if not isinstance(flags, list):
         flags = [flags]
     result = {}
     for raw in flags:
-        for key, value in env.ParseFlags(str(raw)).items():
+        raw = _normalize_undefine_flags(str(raw))
+
+        for key, value in env.ParseFlags(raw).items():
             if key not in result:
                 result[key] = []
             result[key].extend(value)
