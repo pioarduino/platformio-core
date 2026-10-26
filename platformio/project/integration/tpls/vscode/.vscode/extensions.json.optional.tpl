@@ -20,8 +20,6 @@
 %   end
 % end
 {
-    // See http://go.microsoft.com/fwlink/?LinkId=827846
-    // for the documentation about the extensions.json format
     "recommendations": [
 % for i, item in enumerate(sorted(recommendations)):
         "{{ item }}"{{ ("," if (i + 1) < len(recommendations) else "") }}
