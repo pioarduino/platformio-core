@@ -199,7 +199,7 @@ def ProcessProjectDeps(env):
         env.Exit(1)
 
 
-def _normalize_undefine_flags(raw):
+def _split_build_flag_tokens(raw):
     tokens = []
     i = 0
     while i < len(raw):
@@ -225,7 +225,11 @@ def _normalize_undefine_flags(raw):
                 break
             i += 1
         tokens.append((start, i, raw[start:i]))
+    return tokens
 
+
+def _normalize_undefine_flags(raw):
+    tokens = _split_build_flag_tokens(raw)
     replacements = []
     for index, (start, end, token) in enumerate(tokens):
         if token == "-U" and index + 1 < len(tokens):
