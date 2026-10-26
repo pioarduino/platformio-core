@@ -2,8 +2,8 @@
 % import os
 % import re
 %
-% recommendations = set(["pioarduino.pioarduino-ide", "Jason2866.esp-decoder"])
-% unwantedRecommendations = set(["ms-vscode.cpptools-extension-pack"])
+% recommendations = set(["platformio.platformio-ide"])
+% unwantedRecommendations = set(["ms-vscode.cpptools-extension-pack", "pioarduino.pioarduino-ide"])
 % previous_json = os.path.join(project_dir, ".vscode", "extensions.json")
 % if os.path.isfile(previous_json):
 %   fp = open(previous_json)
@@ -20,6 +20,8 @@
 %   end
 % end
 {
+    // See http://go.microsoft.com/fwlink/?LinkId=827846
+    // for the documentation about the extensions.json format
     "recommendations": [
 % for i, item in enumerate(sorted(recommendations)):
         "{{ item }}"{{ ("," if (i + 1) < len(recommendations) else "") }}
