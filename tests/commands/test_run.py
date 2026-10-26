@@ -90,6 +90,7 @@ build_flags =
     -DBAZ
     -UFOO "-U BAR"
     -U BAZ
+    -DMSG='"run -U FOO"'
 """)
 
     tmpdir.mkdir("src").join("main.c").write("""
@@ -102,6 +103,7 @@ build_flags =
 #ifdef BAZ
 #error "BAZ should not be defined"
 #endif
+typedef char msg_value_has_preserved_space[(sizeof(MSG) == 11) ? 1 : -1];
 int main() {
 }
 """)
