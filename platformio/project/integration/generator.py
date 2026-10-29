@@ -165,7 +165,9 @@ class ProjectGenerator:
             if is_optional:
                 file_name = file_name[: -len(".optional")]
             dst_path = os.path.join(dst_dir, file_name)
-            if is_optional and os.path.isfile(dst_path):
+            # never overwrite an existing .gitignore, even from a stale non-optional
+            # template left behind when 'platformio' was installed in the same penv
+            if (is_optional or file_name == ".gitignore") and os.path.isfile(dst_path):
                 continue
             contents = self.render_tpl(tpl_path, tpl_vars)
             with open(dst_path, "w", encoding="utf8") as fp:
